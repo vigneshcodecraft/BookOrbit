@@ -1,0 +1,2 @@
+ALTER TABLE `members` MODIFY COLUMN `phone` bigint NOT NULL;--> statement-breakpoint
+ALTER TABLE `transactions` MODIFY COLUMN `status` enum('Issued','Pending','Returned','Rejected') NOT NULL DEFAULT 'Pending';
