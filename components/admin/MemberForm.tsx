@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
-import { addMember, editMember, State } from "@/lib/actions";
+import { addMember, editMember, State, uploadImage } from "@/lib/actions";
 import { toast, useToast } from "../hooks/use-toast";
 import { IBook } from "@/lib/books/book.model";
 import { IMember } from "@/lib/members/member.model";
@@ -31,6 +31,23 @@ export default function MemberForm({ member, mode }: MemberFormProps) {
   const [state, formAction, isPending] = useActionState(action, initialState);
   const { toast } = useToast();
   const router = useRouter();
+  const [imageURL, setImageURL] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      const result = await uploadImage(file);
+      console.log("result", result);
+      setIsUploading(false);
+      if (result.imageURL) {
+        setImageURL(result.imageURL);
+      } else if (result.error) {
+        console.error(result.error);
+      }
+    }
+  };
   //   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //     const { name, value } = e.target;
   //     setBookData((prev) => ({ ...prev, [name]: value }));
@@ -192,6 +209,24 @@ export default function MemberForm({ member, mode }: MemberFormProps) {
                     {state?.errors?.address}
                   </span>
                 )}
+              </div>
+              <div>
+                <Label
+                  htmlFor="image"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Book Cover Image
+                </Label>
+                <Input
+                  id="image"
+                  type="file"
+                  name="image"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+                {isUploading && <p>Uploading image...</p>}
+
+                <input type="hidden" name="imageURL" value={imageURL} />
               </div>
             </div>
             <div className="flex justify-end space-x-2">

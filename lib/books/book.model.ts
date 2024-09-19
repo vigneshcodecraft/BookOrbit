@@ -23,24 +23,15 @@ export const bookBaseSchema = z.object({
   author: z
     .string()
     .trim()
-    .min(2, { message: "Author name must be at least 2 characters long" })
-    .regex(/^[a-zA-Z\s\/\-.&]+$/, {
-      message: "Author name must contain only alphabetic characters",
-    }),
+    .min(2, { message: "Author name must be at least 2 characters long" }),
   publisher: z
     .string()
     .trim()
-    .min(2, { message: "Publisher name must be at least 2 characters long" })
-    .regex(/^[a-zA-Z\s\/\-.&]+$/, {
-      message: "Publisher name must contain only alphabetic characters",
-    }),
+    .min(2, { message: "Publisher name must be at least 2 characters long" }),
   genre: z
     .string()
     .trim()
-    .min(2, { message: "Genre must be at least 2 characters long" })
-    .regex(/^[a-zA-Z\s\/\-.&]+$/, {
-      message: "Genre must contain only alphabetic characters",
-    }),
+    .min(2, { message: "Genre must be at least 2 characters long" }),
   isbnNo: z
     .string()
     .length(13, { message: "ISBN Number must be exactly 13 characters long" }),
@@ -54,6 +45,12 @@ export const bookBaseSchema = z.object({
     .int({ message: "Total number of copies must be an integer" })
     .min(1, { message: "Number of pages must be at least 1" })
     .positive({ message: "Total number of copies must be a positive integer" }),
+  price: z
+    .number()
+    .int({ message: "Price should be greater than zero" })
+    .nonnegative({ message: "Price should be a non-negative integer" })
+    .default(0),
+  image: z.string().optional().nullable(),
 });
 
 export const bookSchema = bookBaseSchema.extend({

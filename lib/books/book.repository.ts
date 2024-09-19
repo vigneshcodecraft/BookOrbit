@@ -1,21 +1,22 @@
 import "dotenv/config";
-import { MySql2Database } from "drizzle-orm/mysql2";
+import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
   BooksTable,
   MembersTable,
   TransactionsTable,
 } from "../../drizzle/schema";
-import { and, count, eq, ilike, like, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, like, or } from "drizzle-orm";
 import { IPageRequest, IPagedResponse } from "../pagination.response";
-import { IRepository } from "../repository";
+import { IRepository, SortOptions } from "../repository";
 import { IBook, IBookBase } from "./book.model";
+import { VercelPgDatabase } from "drizzle-orm/vercel-postgres";
 export type PageOption = {
   offset?: number;
   limit?: number;
 };
 
 export class BookRepository implements IRepository<IBookBase, IBook> {
-  constructor(private readonly db: MySql2Database<Record<string, unknown>>) {}
+  constructor(private readonly db: VercelPgDatabase<Record<string, unknown>>) {}
 
   async create(data: IBookBase): Promise<IBook> {
     try {
@@ -26,7 +27,7 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
       const [queryResult] = await this.db
         .insert(BooksTable)
         .values(newBookData)
-        .$returningId();
+        .returning({ id: BooksTable.id });
       const [insertedBook] = await this.db
         .select()
         .from(BooksTable)
@@ -109,8 +110,12 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
     }
   }
 
-  async list(params: IPageRequest): Promise<IPagedResponse<IBook>> {
+  async list(
+    params: IPageRequest,
+    sortOptions?: SortOptions<IBook>
+  ): Promise<IPagedResponse<IBook>> {
     try {
+      let sortOrder = asc(BooksTable.id);
       const search = params.search?.toLowerCase();
       const whereExpression = search
         ? or(
@@ -118,12 +123,18 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
             like(BooksTable.isbnNo, `%${search}%`)
           )
         : undefined;
-      const books = await this.db
+      if (sortOptions) {
+        const sortBy = BooksTable[sortOptions.sortBy] || BooksTable.author;
+        sortOrder =
+          sortOptions.sortOrder === "desc" ? desc(sortBy) : asc(sortBy);
+      }
+      const books = (await this.db
         .select()
         .from(BooksTable)
         .where(whereExpression)
         .limit(params.limit)
-        .offset(params.offset);
+        .offset(params.offset)
+        .orderBy(sortOrder)) as IBook[];
 
       const result = await this.db
         .select({ count: count() })
@@ -168,8 +179,10 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
         .select({
           title: BooksTable.title,
           author: BooksTable.author,
+          price: BooksTable.price,
           publisher: BooksTable.publisher,
           pages: BooksTable.pages,
+          image: BooksTable.image,
           availableCopies: BooksTable.availableCopies,
           totalCopies: BooksTable.totalCopies,
           genre: BooksTable.genre,

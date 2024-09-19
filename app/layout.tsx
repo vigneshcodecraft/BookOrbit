@@ -4,8 +4,13 @@ import { cn } from "@/lib/utils";
 import { inter } from "@/components/ui/fonts";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Metadata } from "next";
 
-export default function Layout({ children }: any) {
+export const metadata: Metadata = {
+  title: "BookOrbit",
+  description: "Library Management System",
+};
+export default function RootLayout({ children }: any) {
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>

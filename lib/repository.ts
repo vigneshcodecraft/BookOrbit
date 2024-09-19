@@ -1,4 +1,4 @@
-import { IPageRequest, IPagedResponse } from './pagination.response';
+import { IPageRequest, IPagedResponse } from "./pagination.response";
 
 export interface IRepository<
   MutationModel,
@@ -20,5 +20,10 @@ export interface ITransactionRepository<
     transactionId: number,
     returnDate: string
   ): Promise<CompleteModel | null>;
-  delete(id:number):Promise<CompleteModel | null>;
+  delete(id: number): Promise<CompleteModel | null>;
 }
+
+export type SortOptions<Model> = {
+  sortBy: keyof Model;
+  sortOrder: "asc" | "desc";
+};

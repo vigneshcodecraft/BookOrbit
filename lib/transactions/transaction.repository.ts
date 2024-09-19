@@ -7,7 +7,7 @@ import {
   ITransactionBase,
   ITransactionExtend,
 } from "./transaction.model";
-import { MySql2Database } from "drizzle-orm/mysql2";
+import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
   BooksTable,
   MembersTable,
@@ -15,6 +15,7 @@ import {
 } from "../../drizzle/schema";
 import { and, count, eq, like, ne, or } from "drizzle-orm";
 import { formatDate } from "../utils";
+import { VercelPgDatabase } from "drizzle-orm/vercel-postgres";
 
 export type PageOption = {
   offset?: number;
@@ -24,7 +25,7 @@ export type PageOption = {
 export class TransactionRepository
   implements ITransactionRepository<ITransactionBase, ITransaction>
 {
-  constructor(private readonly db: MySql2Database<Record<string, unknown>>) {}
+  constructor(private readonly db: VercelPgDatabase<Record<string, unknown>>) {}
 
   async create(data: ITransactionBase): Promise<ITransaction> {
     try {
@@ -36,7 +37,7 @@ export class TransactionRepository
       const [result] = await this.db
         .insert(TransactionsTable)
         .values(transaction)
-        .$returningId();
+        .returning({ id: BooksTable.id });
       const [insertedTransaction] = await this.db
         .select()
         .from(TransactionsTable)

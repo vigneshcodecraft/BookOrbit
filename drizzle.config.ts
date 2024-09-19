@@ -1,13 +1,10 @@
-import "dotenv/config";
+import "@/drizzle/envConfig";
 import { defineConfig } from "drizzle-kit";
-import { AppEnvs } from "./read-env";
+
 export default defineConfig({
   schema: "./drizzle/schema.ts",
-  out: "./drizzle/migrations",
-  dialect: "mysql",
+  dialect: "postgresql",
   dbCredentials: {
-    url: AppEnvs.DATABASE_URL,
+    url: process.env.POSTGRES_URL!,
   },
-  verbose: true,
-  strict: true,
 });

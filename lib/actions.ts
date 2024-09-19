@@ -1,9 +1,6 @@
 "use server";
 import bcrypt from "bcrypt";
-import { drizzle } from "drizzle-orm/mysql2";
-import mysql from "mysql2/promise";
-import { BooksTable, MembersTable, TransactionsTable } from "@/drizzle/schema"; // Import your members schema
-import { AppEnvs } from "../read-env";
+import { BooksTable, MembersTable, TransactionsTable } from "@/drizzle/schema";
 import { and, eq } from "drizzle-orm";
 import { auth, signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
@@ -11,15 +8,14 @@ import { IMemberBase, memberBaseSchema } from "./members/member.model";
 import { MemberRepository } from "./members/member.repository";
 import { redirect } from "next/navigation";
 import { BookRepository } from "./books/book.repository";
-import { getDrizzleDB } from "@/drizzle/drizzleDB";
+import { db } from "@/drizzle/drizzleDB";
 import { TransactionRepository } from "./transactions/transaction.repository";
 import { revalidatePath } from "next/cache";
-import { bookBaseSchema, IBookBase } from "./books/book.model";
-import { GetServerSideProps } from "next";
-import { request } from "http";
+import { bookBaseSchema, IBook, IBookBase } from "./books/book.model";
+import cloudinary from "@/lib/cloudinary";
 import { formatDate } from "./utils";
+import { SortOptions } from "./repository";
 // Create MySQL pool and connect to the database
-const db = getDrizzleDB();
 
 export interface State {
   errors?: { [key: string]: string[] };
@@ -214,15 +210,19 @@ export async function handleLogout() {
 export async function fetchFilteredBooks(
   query: string | undefined,
   currentPage: number,
-  booksPerPage: number
+  booksPerPage: number,
+  sortOptions?: SortOptions<IBook>
 ) {
   try {
     const offset = (currentPage - 1) * booksPerPage;
-    const books = await bookRepo.list({
-      search: query,
-      offset: offset,
-      limit: booksPerPage,
-    });
+    const books = await bookRepo.list(
+      {
+        search: query,
+        offset: offset,
+        limit: booksPerPage,
+      },
+      sortOptions
+    );
     return { books: books.items, totalCount: books.pagination.total };
   } catch (error) {
     console.log(error);
@@ -365,8 +365,10 @@ export async function addBook(prevState: State, formData: FormData) {
     totalCopies: Number(formData.get("totalCopies")),
     pages: Number(formData.get("pages")),
     isbnNo: formData.get("isbnNo"),
+    price: Number(formData.get("price")),
   });
 
+  const image = formData.get("imageURL") as string;
   if (!validateFields.success) {
     console.log("Validation failed:", validateFields.error);
     return {
@@ -374,7 +376,7 @@ export async function addBook(prevState: State, formData: FormData) {
     };
   }
 
-  const { title, author, publisher, genre, pages, isbnNo, totalCopies } =
+  const { title, author, publisher, genre, pages, isbnNo, totalCopies, price } =
     validateFields.data;
 
   if (
@@ -384,7 +386,8 @@ export async function addBook(prevState: State, formData: FormData) {
     !isbnNo ||
     !genre ||
     !pages ||
-    !totalCopies
+    !totalCopies ||
+    !price
   ) {
     console.log("All fields are required");
     return { message: "All Fields are required" };
@@ -398,6 +401,8 @@ export async function addBook(prevState: State, formData: FormData) {
       totalCopies,
       isbnNo,
       pages,
+      price,
+      image,
     };
 
     console.log("New book data:", newBook);
@@ -424,18 +429,20 @@ export async function editBook(prevState: State, formData: FormData) {
     totalCopies: Number(formData.get("totalCopies")),
     pages: Number(formData.get("pages")),
     isbnNo: formData.get("isbnNo"),
+    price: Number(formData.get("price")),
   });
   const id = Number(formData.get("id"));
-
+  const image = formData.get("imageURL") as string;
   if (!validateFields.success) {
     console.log("Failure");
     console.log(validateFields.error);
     return {
       errors: validateFields.error.flatten().fieldErrors,
+      message: "Encountered error during validating data",
     };
   }
 
-  const { title, author, publisher, genre, pages, isbnNo, totalCopies } =
+  const { title, author, publisher, genre, pages, isbnNo, totalCopies, price } =
     validateFields.data;
   if (
     !title ||
@@ -444,7 +451,8 @@ export async function editBook(prevState: State, formData: FormData) {
     !isbnNo ||
     !genre ||
     !pages ||
-    !totalCopies
+    !totalCopies ||
+    !price
   ) {
     console.log("All fields are required");
     return { message: "All Fields are required" };
@@ -458,6 +466,8 @@ export async function editBook(prevState: State, formData: FormData) {
       totalCopies,
       isbnNo,
       pages,
+      price,
+      image,
     };
 
     console.log(updateBook);
@@ -489,7 +499,7 @@ export async function addMember(prevState: State, formData: FormData) {
     email: formData.get("email"),
     password: formData.get("password"),
   });
-
+  const image = formData.get("imageURL") as string;
   if (!validateFields.success) {
     console.log("Failure");
     console.log(validateFields.error);
@@ -528,7 +538,7 @@ export async function addMember(prevState: State, formData: FormData) {
       password: hashedPwd,
       role,
       address,
-      image: null,
+      image,
     };
 
     console.log(newMember);
@@ -558,7 +568,7 @@ export async function editMember(prevState: State, formData: FormData) {
     password: formData.get("password"),
   });
   const id = Number(formData.get("id"));
-
+  const image = formData.get("imageURL") as string;
   if (!validateFields.success) {
     console.log("Failure");
     console.log(validateFields.error);
@@ -582,7 +592,7 @@ export async function editMember(prevState: State, formData: FormData) {
     return { message: "All Fields are required" };
   }
   try {
-    const updateMember: Omit<IMemberBase, "image"> = {
+    const updateMember = {
       firstName,
       lastName,
       email,
@@ -590,6 +600,7 @@ export async function editMember(prevState: State, formData: FormData) {
       password,
       role,
       address,
+      image,
     };
 
     console.log(updateMember);
@@ -829,4 +840,41 @@ export async function handleReturnBook(id: number) {
   } finally {
     revalidatePath("/admin/transactions");
   }
+}
+
+export async function uploadImage(file: File) {
+  if (!file) return { imageURL: "" };
+
+  try {
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: "book_covers" },
+        (error: any, result: any) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+
+      const reader = file.stream().getReader();
+      const pump = async () => {
+        const { done, value } = await reader.read();
+        if (done) {
+          uploadStream.end();
+        } else {
+          uploadStream.write(value);
+          pump();
+        }
+      };
+      pump();
+    });
+
+    if (result && typeof result === "object" && "secure_url" in result) {
+      return { imageURL: result.secure_url as string };
+    }
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    return { error: "Failed to upload image. Please try again." };
+  }
+
+  return { imageURL: "" };
 }

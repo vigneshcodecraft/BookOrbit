@@ -10,6 +10,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
+import { useToast } from "./hooks/use-toast";
+import { borrowBook, fetchUserDetails } from "@/lib/actions";
 
 interface BookDetailsDialogProps {
   book: any;
@@ -20,6 +22,21 @@ export default function BookDetailsDialog({
   book,
   onClose,
 }: BookDetailsDialogProps) {
+  const { toast } = useToast();
+
+  const handleBorrowBook = async (bookId: number) => {
+    const currentUser = await fetchUserDetails();
+    const result = await borrowBook(bookId, currentUser?.id!);
+
+    if (result?.status) {
+      toast({
+        title: result.status,
+        description: result.message,
+        variant: result.status === "Success" ? "success" : "destructive", // Use the correct variant for success/error
+        duration: 2000,
+      });
+    }
+  };
   return (
     <>
       <Dialog open={!!book} onOpenChange={onClose}>
@@ -59,6 +76,12 @@ export default function BookDetailsDialog({
               </span>
               <span className="col-span-3">{book?.availableCopies}</span>
             </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <span className="text-sm font-medium text-muted-foreground">
+                Price
+              </span>
+              <span className="col-span-3">{book?.price}</span>
+            </div>
             {/* <div className="grid grid-cols-4 items-center gap-4">
             <span className="text-sm font-medium text-muted-foreground">
               Status:
@@ -89,6 +112,17 @@ export default function BookDetailsDialog({
           </div>*/}
           </div>
           <DialogFooter>
+            <Button
+              aria-label="borrow"
+              variant="outline"
+              className="bg-green-400 hover:bg-green-700"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleBorrowBook(book.id);
+              }}
+            >
+              Borrow
+            </Button>
             <Button onClick={onClose}>Close</Button>
           </DialogFooter>
         </DialogContent>

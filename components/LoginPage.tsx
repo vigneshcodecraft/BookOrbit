@@ -68,7 +68,7 @@ export default function LoginPage({ children }: any) {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 mb-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"

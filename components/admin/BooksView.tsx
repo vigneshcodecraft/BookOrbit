@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Edit, Trash2 } from "lucide-react";
+import { Search, Plus, Edit, Trash2, ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -22,29 +22,50 @@ import {
 } from "@/components/ui/select";
 import { IBook } from "@/lib/books/book.model";
 import Pagination from "../Pagination";
-import { handleDeleteBook } from "@/lib/actions";
+import { borrowBook, fetchUserDetails, handleDeleteBook } from "@/lib/actions";
 import { useToast } from "@/components/hooks/use-toast";
 import Link from "next/link";
 import SearchBar from "../SearchBar";
 import AlertDialogBox from "./AlertDialogBox";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { SortOptions } from "@/lib/repository";
 
 export default function BooksView({
   books,
   totalPages,
+  sortOptions,
 }: {
   books: IBook[];
   totalPages: number;
+  sortOptions: SortOptions<IBook>;
 }) {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
 
-  const handleDelete = async (id: number) => {
-    const result = await handleDeleteBook(id);
-    toast({
-      title: result.success ? "Success" : "Error",
-      description: result.message,
-      variant: result.success ? "success" : "destructive", // Use the correct variant for success/error
-      duration: 2000,
-    });
+  const handleBorrowBook = async (bookId: number) => {
+    const currentUser = await fetchUserDetails();
+    const result = await borrowBook(bookId, currentUser?.id!);
+
+    if (result?.status) {
+      toast({
+        title: result.status,
+        description: result.message,
+        variant: result.status === "Success" ? "success" : "destructive", // Use the correct variant for success/error
+        duration: 2000,
+      });
+    }
+  };
+
+  const handleSortChange = (column: string) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set("sort", column);
+    newSearchParams.set(
+      "order",
+      sortOptions.sortOrder === "asc" ? "desc" : "asc"
+    );
+    replace(`${pathname}?${newSearchParams.toString()}`);
   };
 
   return (
@@ -87,14 +108,51 @@ export default function BooksView({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Author</TableHead>
-                <TableHead>Publisher</TableHead>
-                <TableHead>Genre</TableHead>
-                <TableHead>ISBN</TableHead>
-                <TableHead>Pages</TableHead>
-                <TableHead>TotalCopies</TableHead>
-                <TableHead>Available</TableHead>
+                <SortableHeader
+                  column="title"
+                  handleSortChange={handleSortChange}
+                  label="Title"
+                />
+                <SortableHeader
+                  column="author"
+                  handleSortChange={handleSortChange}
+                  label="Author"
+                />
+                <SortableHeader
+                  column="publisher"
+                  handleSortChange={handleSortChange}
+                  label="Publisher"
+                />
+                <SortableHeader
+                  column="genre"
+                  handleSortChange={handleSortChange}
+                  label="Genre"
+                />
+                <SortableHeader
+                  column="isbnNo"
+                  handleSortChange={handleSortChange}
+                  label="ISBN"
+                />
+                <SortableHeader
+                  column="pages"
+                  handleSortChange={handleSortChange}
+                  label="Pages"
+                />
+                <SortableHeader
+                  column="price"
+                  handleSortChange={handleSortChange}
+                  label="Price"
+                />
+                <SortableHeader
+                  column="totalCopies"
+                  handleSortChange={handleSortChange}
+                  label="Total Copies"
+                />
+                <SortableHeader
+                  column="availableCopies"
+                  handleSortChange={handleSortChange}
+                  label="Available"
+                />
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -107,9 +165,21 @@ export default function BooksView({
                   <TableCell>{book.genre}</TableCell>
                   <TableCell>{book.isbnNo}</TableCell>
                   <TableCell>{book.pages}</TableCell>
+                  <TableCell>{book.price}</TableCell>
                   <TableCell>{book.totalCopies}</TableCell>
                   <TableCell>{book.availableCopies}</TableCell>
                   <TableCell className="flex">
+                    <Button
+                      aria-label="borrow"
+                      variant="outline"
+                      className="bg-green-400 hover:bg-green-700 mr-3"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBorrowBook(book.id);
+                      }}
+                    >
+                      Borrow
+                    </Button>
                     <Link href={`/admin/books/${book.id}/edit`}>
                       <Button variant="ghost" size="icon">
                         <Edit className="h-4 w-4" />
@@ -136,3 +206,24 @@ export default function BooksView({
     </Card>
   );
 }
+
+const SortableHeader = ({
+  column,
+  handleSortChange,
+  label,
+}: {
+  column: keyof IBook;
+  handleSortChange: (column: string) => void;
+  label: string;
+}) => (
+  <TableHead className="hidden sm:table-cell">
+    <Button
+      variant="ghost"
+      onClick={() => handleSortChange(column)}
+      className="hover:bg-transparent focus:outline-none p-0 "
+    >
+      {label}
+      <ArrowUpDown className="ml-1 h-4 w-4" />
+    </Button>
+  </TableHead>
+);

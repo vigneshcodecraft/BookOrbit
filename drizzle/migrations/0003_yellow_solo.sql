@@ -1,0 +1,1 @@
+ALTER TABLE `books` ADD `price` int NOT NULL;

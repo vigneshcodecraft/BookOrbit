@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { useToast } from "../hooks/use-toast";
 import { IBook } from "@/lib/books/book.model";
-import { addBook, editBook, State } from "@/lib/actions";
+import { addBook, editBook, State, uploadImage } from "@/lib/actions";
 import { redirect } from "next/navigation";
 import { useRouter } from "next/navigation";
 
@@ -29,6 +29,24 @@ export default function BookForm({ book, mode }: BookFormProps) {
   const [state, formAction, isPending] = useActionState(action, initialState);
   const { toast } = useToast();
   const router = useRouter();
+  const [imageURL, setImageURL] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      const result = await uploadImage(file);
+      console.log("result", result);
+      setIsUploading(false);
+      if (result.imageURL) {
+        setImageURL(result.imageURL);
+      } else if (result.error) {
+        console.error(result.error);
+      }
+    }
+  };
+
   useEffect(() => {
     console.log("status: ", state.status);
     if (state.status) {
@@ -122,11 +140,12 @@ export default function BookForm({ book, mode }: BookFormProps) {
                     <SelectValue placeholder="Select genre" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="fiction">Fiction</SelectItem>
-                    <SelectItem value="non-fiction">Non-Fiction</SelectItem>
-                    <SelectItem value="science">Science</SelectItem>
-                    <SelectItem value="history">History</SelectItem>
-                    <SelectItem value="biography">Biography</SelectItem>
+                    <SelectItem value="Fiction">Fiction</SelectItem>
+                    <SelectItem value="Non-Fiction">Non-Fiction</SelectItem>
+                    <SelectItem value="Science">Science</SelectItem>
+                    <SelectItem value="Computer">Computer</SelectItem>
+                    <SelectItem value="History">History</SelectItem>
+                    <SelectItem value="Biography">Biography</SelectItem>
                   </SelectContent>
                 </Select>
                 {state?.errors?.genre && (
@@ -151,6 +170,21 @@ export default function BookForm({ book, mode }: BookFormProps) {
                 )}
               </div>
               <div className="space-y-2">
+                <Label htmlFor="price">Price</Label>
+                <Input
+                  id="price"
+                  name="price"
+                  defaultValue={book?.price}
+                  type="number"
+                  required
+                />
+                {state?.errors?.price && (
+                  <span className="text-sm text-red-500">
+                    {state?.errors?.price}
+                  </span>
+                )}
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="totalCopies">Total Copies</Label>
                 <Input
                   id="totalCopies"
@@ -165,6 +199,24 @@ export default function BookForm({ book, mode }: BookFormProps) {
                     {state?.errors?.totalCopies}
                   </span>
                 )}
+              </div>
+              <div>
+                <Label
+                  htmlFor="image"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Book Cover Image
+                </Label>
+                <Input
+                  id="image"
+                  type="file"
+                  name="image"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+                {isUploading && <p>Uploading image...</p>}
+
+                <input type="hidden" name="imageURL" value={imageURL} />
               </div>
             </div>
             <div className="flex justify-end space-x-2">

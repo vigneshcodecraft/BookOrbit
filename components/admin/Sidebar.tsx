@@ -36,12 +36,12 @@ export default function Sidebar() {
       label: "Requests",
       value: "requests",
     },
-    {
-      icon: <Clock className="h-5 w-5" />,
-      label: "Due Today",
-      value: "dueToday",
-    },
-    { icon: <Clock className="h-5 w-5" />, label: "Overdue", value: "overdue" },
+    // {
+    //   icon: <Clock className="h-5 w-5" />,
+    //   label: "Due Today",
+    //   value: "dueToday",
+    // },
+    // { icon: <Clock className="h-5 w-5" />, label: "Overdue", value: "overdue" },
   ];
   const [activeTab, setActiveTab] = useState("dashboard");
   const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
