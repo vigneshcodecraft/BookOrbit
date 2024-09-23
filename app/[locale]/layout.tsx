@@ -5,16 +5,27 @@ import { inter } from "@/components/ui/fonts";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Metadata } from "next";
+import { getMessages } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
 
 export const metadata: Metadata = {
   title: "BookOrbit",
   description: "Library Management System",
 };
-export default function RootLayout({ children }: any) {
+export default async function RootLayout({
+  children,
+  params: { locale },
+}: {
+  children: React.ReactNode;
+  params: { locale: string };
+}) {
+  const messages = await getMessages();
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className={`${inter.className} antialiased`}>
-        {children}
+        <NextIntlClientProvider messages={messages}>
+          {children}
+        </NextIntlClientProvider>
         <Toaster />
       </body>
     </html>

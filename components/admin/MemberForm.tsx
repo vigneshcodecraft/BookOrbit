@@ -48,6 +48,12 @@ export default function MemberForm({ member, mode }: MemberFormProps) {
       }
     }
   };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    formAction(formData);
+  };
   //   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //     const { name, value } = e.target;
   //     setBookData((prev) => ({ ...prev, [name]: value }));

@@ -1,0 +1,75 @@
+{
+  "homePage": {
+    "header": {
+      "siteTitle": "BookOrbit",
+      "logIn": "Log In",
+      "signUp": "Sign Up"
+    },
+    "heroSection": {
+      "title": "Manage Your Library with Ease",
+      "description": "Our library management system helps you organize your books, track borrowings, and manage your library efficiently.",
+      "signUp": "Sign Up",
+      "learnMore": "Learn More"
+    },
+    "features": {
+      "bookCatalog": {
+        "title": "Book Catalog",
+        "description": "Easily manage your book collection with our comprehensive catalog."
+      },
+      "borrowingTracking": {
+        "title": "Borrowing Tracking",
+        "description": "Keep track of who has borrowed what and when they need to return it."
+      },
+      "inventoryManagement": {
+        "title": "Inventory Management",
+        "description": "Maintain a clear overview of your library's inventory and stock levels."
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Stay informed about due dates, overdue books, and other important updates."
+      },
+      "accessibility": {
+        "title": "Accessibility",
+        "description": "Our system is designed to be user-friendly and accessible for all."
+      }
+    },
+    "streamlineSection": {
+      "title": "Streamline Your Library Management",
+      "description": "Our library management system provides a comprehensive solution to help you organize, track, and optimize your library's operations.",
+      "signUp": "Sign Up",
+      "learnMore": "Learn More"
+    },
+    "footer": {
+      "copyright": "© 2024 Library Manager. All rights reserved.",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy"
+    }
+  },
+  "loginPage": {
+    "header": {
+      "title": "Login",
+      "description": "Enter your email and password to access your account"
+    },
+    "form": {
+      "emailLabel": "Email",
+      "emailPlaceholder": "m@example.com",
+      "passwordLabel": "Password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "errorMessage": "Invalid credentials.",
+      "loginButton": "Login",
+      "loggingIn": "Logging in..."
+    },
+    "footer": {
+      "signInWith": "or sign in with",
+      "signUpPrompt": "Don't have an account?",
+      "signUpLink": "SignUp"
+    }
+  },
+  "navContent": {
+    "dashboard": "Dashboard",
+    "allBooks": "All Books",
+    "myBooks": "My Books",
+    "myRequests": "My Requests"
+  }
+}

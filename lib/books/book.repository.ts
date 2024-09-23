@@ -119,8 +119,8 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
       const search = params.search?.toLowerCase();
       const whereExpression = search
         ? or(
-            like(BooksTable.title, `%${search}%`),
-            like(BooksTable.isbnNo, `%${search}%`)
+            ilike(BooksTable.title, `%${search}%`),
+            ilike(BooksTable.isbnNo, `%${search}%`)
           )
         : undefined;
       if (sortOptions) {
@@ -164,8 +164,8 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
       const search = params.search?.toLowerCase();
       const whereExpression = search
         ? or(
-            like(BooksTable.title, `%${search}%`),
-            like(BooksTable.isbnNo, `%${search}%`)
+            ilike(BooksTable.title, `%${search}%`),
+            ilike(BooksTable.isbnNo, `%${search}%`)
           )
         : undefined;
 

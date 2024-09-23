@@ -3,7 +3,14 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Edit, Trash2, ArrowUpDown } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  ArrowUpDown,
+  BookCopy,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -146,12 +153,7 @@ export default function BooksView({
                 <SortableHeader
                   column="totalCopies"
                   handleSortChange={handleSortChange}
-                  label="Total Copies"
-                />
-                <SortableHeader
-                  column="availableCopies"
-                  handleSortChange={handleSortChange}
-                  label="Available"
+                  label="Copies"
                 />
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -164,11 +166,15 @@ export default function BooksView({
                   <TableCell>{book.publisher}</TableCell>
                   <TableCell>{book.genre}</TableCell>
                   <TableCell>{book.isbnNo}</TableCell>
-                  <TableCell>{book.pages}</TableCell>
-                  <TableCell>{book.price}</TableCell>
-                  <TableCell>{book.totalCopies}</TableCell>
-                  <TableCell>{book.availableCopies}</TableCell>
-                  <TableCell className="flex">
+                  <TableCell align="right">{book.pages}</TableCell>
+                  <TableCell align="right">{book.price}</TableCell>
+                  <TableCell>
+                    <div className="flex justify-center">
+                      <BookCopy className="w-4 h-4 mr-2" />
+                      {book.totalCopies}/{book.availableCopies}
+                    </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
                     <Button
                       aria-label="borrow"
                       variant="outline"

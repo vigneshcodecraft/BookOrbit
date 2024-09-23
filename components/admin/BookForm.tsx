@@ -17,6 +17,9 @@ import { IBook } from "@/lib/books/book.model";
 import { addBook, editBook, State, uploadImage } from "@/lib/actions";
 import { redirect } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { Check, Loader2, Upload } from "lucide-react";
 
 interface BookFormProps {
   book?: IBook;
@@ -30,19 +33,50 @@ export default function BookForm({ book, mode }: BookFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [imageURL, setImageURL] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    formAction(formData);
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setIsUploading(true);
+      setUploadProgress(0);
+      setUploadSuccess(false);
+
+      // Simulating upload progress
+      const interval = setInterval(() => {
+        setUploadProgress((prevProgress) => {
+          if (prevProgress >= 90) {
+            clearInterval(interval);
+            return 90;
+          }
+          return prevProgress + 10;
+        });
+      }, 300);
+
       const result = await uploadImage(file);
-      console.log("result", result);
+      clearInterval(interval);
+      setUploadProgress(100);
       setIsUploading(false);
+
       if (result.imageURL) {
         setImageURL(result.imageURL);
+        setUploadSuccess(true);
+        setTimeout(() => setUploadSuccess(false), 3000); // Hide success icon after 3 seconds
       } else if (result.error) {
         console.error(result.error);
+        toast({
+          title: "Upload Failed",
+          description: "There was an error uploading your image.",
+          variant: "destructive",
+        });
       }
     }
   };
@@ -67,7 +101,7 @@ export default function BookForm({ book, mode }: BookFormProps) {
           <CardTitle>{mode === "add" ? "Add New Book" : "Edit Book"}</CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={formAction} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {mode === "edit" && (
                 <Input id="id" name="id" type="hidden" value={book?.id} />
@@ -184,6 +218,71 @@ export default function BookForm({ book, mode }: BookFormProps) {
                   </span>
                 )}
               </div>
+
+              <motion.div className="row-span-2">
+                <Label
+                  htmlFor="image"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Book Cover Image
+                </Label>
+                <div className="flex items-center space-x-4">
+                  <Input
+                    id="image"
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  <Label
+                    htmlFor="image"
+                    className="cursor-pointer transition-colors duration-200 py-2 px-4 rounded-full flex items-center space-x-2"
+                  >
+                    <Upload className="w-5 h-5" />
+                    <span>Choose Image</span>
+                  </Label>
+                  <AnimatePresence>
+                    {isUploading && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="flex items-center space-x-2"
+                      >
+                        <Loader2 className="w-5 h-5 text-black animate-spin" />
+                        <span className="text-black">{uploadProgress}%</span>
+                      </motion.div>
+                    )}
+                    {uploadSuccess && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8, rotate: -180 }}
+                        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, rotate: 180 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 200,
+                          damping: 10,
+                        }}
+                      >
+                        <Check className="w-6 h-6 text-green-400" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                {(book?.image || imageURL) && (
+                  <div className="mt-4">
+                    <Image
+                      width={120}
+                      height={180}
+                      src={book?.image || imageURL}
+                      alt="Book cover"
+                      className="object-cover rounded-lg shadow-lg"
+                    />
+                  </div>
+                )}
+                <input type="hidden" name="imageURL" value={imageURL} />
+              </motion.div>
               <div className="space-y-2">
                 <Label htmlFor="totalCopies">Total Copies</Label>
                 <Input
@@ -199,24 +298,6 @@ export default function BookForm({ book, mode }: BookFormProps) {
                     {state?.errors?.totalCopies}
                   </span>
                 )}
-              </div>
-              <div>
-                <Label
-                  htmlFor="image"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Book Cover Image
-                </Label>
-                <Input
-                  id="image"
-                  type="file"
-                  name="image"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
-                {isUploading && <p>Uploading image...</p>}
-
-                <input type="hidden" name="imageURL" value={imageURL} />
               </div>
             </div>
             <div className="flex justify-end space-x-2">

@@ -1,5 +1,12 @@
 /** @type {import('next').NextConfig} */
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin();
 const nextConfig = {
+  images: {
+    domains: ["res.cloudinary.com"],
+  },
+
   devIndicators: {
     appIsrStatus: false,
   },
@@ -13,5 +20,4 @@ const nextConfig = {
     return config;
   },
 };
-
-export default nextConfig;
+export default withNextIntl(nextConfig);

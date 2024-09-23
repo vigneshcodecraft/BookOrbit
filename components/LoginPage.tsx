@@ -16,11 +16,14 @@ import { ChromeIcon } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { authenticate } from "@/lib/actions";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage({ children }: any) {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [errorMessage, formAction] = useActionState(authenticate, undefined);
+  const t = useTranslations("loginPage");
+  const [errorMessage, formAction, isPending] = useActionState(
+    authenticate,
+    undefined
+  );
   // const handleLogin = async (e: any) => {
   //   // e?.preventDefault();
   //   console.log("login clicked");
@@ -50,45 +53,36 @@ export default function LoginPage({ children }: any) {
     <div className="flex-1 flex justify-center items-center py-28">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl flex justify-center">Login</CardTitle>
-          <CardDescription>
-            Enter your email and password to access your account
-          </CardDescription>
+          <CardTitle className="text-2xl flex justify-center">
+            {t("header.title")}
+          </CardTitle>
+          <CardDescription>{t("header.description")}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <form action={formAction}>
             <div className="space-y-2 mb-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("form.emailLabel")}</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="m@example.com"
+                placeholder={t("form.emailPlaceholder")}
                 required
-                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="space-y-2 mb-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                }}
-              />
+              <Label htmlFor="password">{t("form.passwordLabel")}</Label>
+              <Input id="password" name="password" type="password" required />
             </div>
             <div className="flex items-center justify-between mt-4">
               <div className="flex items-center gap-2">
                 <Checkbox id="rememberMe" />
                 <Label htmlFor="rememberMe" className="text-sm">
-                  Remember me
+                  {t("form.rememberMe")}
                 </Label>
               </div>
               <Link href="#" className="text-sm underline" prefetch={false}>
-                Forgot password?
+                {t("form.forgotPassword")}
               </Link>
             </div>
             {errorMessage && (
@@ -97,21 +91,23 @@ export default function LoginPage({ children }: any) {
               </div>
             )}
             <div className="mt-6 text-center ">
-              <Button className="w-full" type="submit">
-                Login
+              <Button className="w-full" type="submit" disabled={isPending}>
+                {isPending ? t("form.loggingIn") : t("form.loginButton")}
               </Button>
             </div>
           </form>
         </CardContent>
         <CardFooter className="flex flex-1 flex-col -mt-8">
           <div className="mt-4 text-center">
-            <span className="text-muted-foreground">or sign in with</span>
+            <span className="text-muted-foreground">
+              {t("footer.signInWith")}
+            </span>
             {children}
           </div>
           <div className="mt-4 text-center">
-            Don't have an account?{" "}
+            {t("footer.signUpPrompt")}{" "}
             <Link href="/signup" className="underline">
-              SignUp
+              {t("footer.signUpLink")}
             </Link>
           </div>
         </CardFooter>
