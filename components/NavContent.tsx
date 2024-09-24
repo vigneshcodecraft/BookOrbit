@@ -1,11 +1,5 @@
 "use client";
-import {
-  AlertCircle,
-  BookOpen,
-  BookPlus,
-  Home,
-  LayoutDashboard,
-} from "lucide-react";
+import { AlertCircle, BookOpen, BookPlus, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -17,7 +11,7 @@ interface NavContentProps {
 export default function NavContent({
   isSidebarExpanded = true,
 }: NavContentProps) {
-  const pathname = usePathname(); // Get the current path
+  const pathname = usePathname();
   const links = [
     {
       icon: <LayoutDashboard className="mr-3 h-6 w-6" />,
@@ -48,8 +42,8 @@ export default function NavContent({
             className={clsx(
               "flex items-center px-4 py-2 text-sm font-medium rounded-md",
               {
-                "bg-gray-100 text-gray-900": pathname === link.href,
-                "text-gray-600 hover:bg-gray-50 hover:text-gray-900":
+                "bg-accent-primary text-white": pathname === link.href,
+                "text-text-secondary hover:bg-background hover:text-text-primary":
                   pathname !== link.href,
               }
             )}

@@ -5,7 +5,7 @@ import { inter } from "@/components/ui/fonts";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Metadata } from "next";
-import { getMessages } from "next-intl/server";
+import { getLocale, getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 
 export const metadata: Metadata = {
@@ -14,11 +14,13 @@ export const metadata: Metadata = {
 };
 export default async function RootLayout({
   children,
-  params: { locale },
 }: {
   children: React.ReactNode;
-  params: { locale: string };
 }) {
+  const locale = await getLocale();
+
+  // Providing all messages to the client
+  // side is the easiest way to get started
   const messages = await getMessages();
   return (
     <html lang={locale}>

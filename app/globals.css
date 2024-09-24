@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 226 100% 97%;
+    --background-secondary: 226 100% 94%;
+    --background-tertiary: 0 0% 100%;
+
+    --text-primary: 215 28% 17%;
+    --text-secondary: 226 70% 55%;
+    --text-tertiary: 226 64% 45%;
+
+    --accent-primary: 226 64% 45%;
+    --accent-secondary: 226 70% 55%;
+    --accent-hover: 226 70% 40%;
+
+    --border: 226 96% 89%;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --background-secondary: 215 28% 17%;
+    --background-tertiary: 215 27% 27%;
+
+    --text-primary: 0 0% 100%;
+    --text-secondary: 226 100% 94%;
+    --text-tertiary: 226 96% 89%;
+
+    --accent-primary: 226 70% 55%;
+    --accent-secondary: 226 96% 89%;
+    --accent-hover: 226 64% 45%;
+
+    --border: 215 14% 34%;
+  }
+}
+
+@layer components {
+  body {
+    @apply bg-background text-text-primary transition-colors duration-300;
+  }
+
+  .bg-primary {
+    @apply bg-background;
+  }
+
+  .bg-secondary {
+    @apply bg-background-secondary;
+  }
+
+  .bg-tertiary {
+    @apply bg-background-tertiary;
+  }
+
+  .text-primary {
+    @apply text-text-primary;
+  }
+
+  .text-secondary {
+    @apply text-text-secondary;
+  }
+
+  .text-tertiary {
+    @apply text-text-tertiary;
+  }
+
+  .accent-primary {
+    @apply bg-accent-primary text-white;
+  }
+
+  .accent-secondary {
+    @apply bg-accent-secondary text-white;
+  }
+
+  .accent-hover {
+    @apply hover:bg-accent-hover;
+  }
+
+  .border-theme {
+    @apply border-border;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .animate-slide-in {
+    animation: slideInFromBottom 0.5s ease-out;
+  }
+
+  .animate-pulse {
+    animation: pulse 2s infinite;
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradientShift 5s ease infinite;
+  }
+
+  .transition-theme {
+    @apply transition-all duration-300;
+  }
+}

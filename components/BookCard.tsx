@@ -48,10 +48,12 @@ export default function BookCard({ book }: BookCardProps) {
     <Card className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer">
       <div className="relative pb-[60%] sm:pb-[80%]">
         {book.image ? (
-          <img
+          <Image
             src={book.image}
+            layout="fill"
+            objectFit="contain cover "
+            className="rounded-lg shadow-2xl px-1"
             alt={`Cover of ${book.title}`}
-            className="absolute inset-0 w-full h-full aspect-auto"
           />
         ) : (
           <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary to-secondary text-primary-foreground p-4">

@@ -1,6 +1,3 @@
-// This is the root layout component for your Next.js app.
-// Learn more: https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts#root-layout-required
-
 import NavBar from "@/components/NavBar";
 import SideNavBar from "@/components/SideNavBar";
 import { ReactNode } from "react";
@@ -11,7 +8,7 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <div className="flex h-screen bg-gray-100 text-gray-800">
+    <div className="flex h-screen bg-background text-text-primary">
       <SideNavBar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <NavBar />

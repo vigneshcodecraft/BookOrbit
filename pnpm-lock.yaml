@@ -56,9 +56,6 @@ importers:
       '@vercel/postgres':
         specifier: ^0.10.0
         version: 0.10.0
-      autoprefixer:
-        specifier: 10.4.19
-        version: 10.4.19(postcss@8.4.45)
       bcrypt:
         specifier: ^5.1.1
         version: 5.1.1
@@ -92,9 +89,6 @@ importers:
       next-intl:
         specifier: ^3.19.4
         version: 3.19.4(next@15.0.0-canary.132(react-dom@19.0.0-rc-f38c22b244-20240704(react@19.0.0-rc-f38c22b244-20240704))(react@19.0.0-rc-f38c22b244-20240704))(react@19.0.0-rc-f38c22b244-20240704)
-      postcss:
-        specifier: ^8
-        version: 8.4.45
       postgres:
         specifier: ^3.4.4
         version: 3.4.4
@@ -107,9 +101,6 @@ importers:
       tailwind-merge:
         specifier: ^2.5.2
         version: 2.5.2
-      tailwindcss:
-        specifier: ^3.4.1
-        version: 3.4.10
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.10)
@@ -138,6 +129,9 @@ importers:
       '@types/react-dom':
         specifier: 18.3.0
         version: 18.3.0
+      autoprefixer:
+        specifier: 10.4.19
+        version: 10.4.19(postcss@8.4.45)
       dotenv:
         specifier: 16.4.5
         version: 16.4.5
@@ -150,6 +144,12 @@ importers:
       mysql2:
         specifier: ^3.11.0
         version: 3.11.0
+      postcss:
+        specifier: ^8.4.45
+        version: 8.4.45
+      tailwindcss:
+        specifier: ^3.4.10
+        version: 3.4.10
 
 packages:
 

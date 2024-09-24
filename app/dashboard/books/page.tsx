@@ -16,8 +16,13 @@ export default async function Page({
   const booksPerPage = 6;
   const query = searchParams?.query || "";
   const currentPage = Number(searchParams?.page) || 1;
-  const userDetails = await fetchUserDetails();
-  const userTransaction = await fetchMyBooks;
+  const currentUser = await fetchUserDetails();
+  const userTransaction = await fetchMyBooks(
+    query,
+    currentPage,
+    booksPerPage,
+    currentUser?.id!
+  );
   const { books, totalCount } = await fetchFilteredBooks(
     query,
     currentPage,

@@ -19,8 +19,9 @@ export default function ThemeToggle() {
   return (
     <div className="flex items-center space-x-4">
       <Button
+        variant="ghost"
         onClick={handleThemeToggle}
-        className="text-indigo-600 dark:text-indigo-400"
+        className="text-indigo-600 dark:text-indigo-400 transition-colors duration-300"
       >
         {theme === "light" ? (
           <Moon className="h-5 w-5" />

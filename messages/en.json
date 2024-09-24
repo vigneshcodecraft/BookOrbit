@@ -1,46 +1,65 @@
 {
+  "LocaleSwitcher": {
+    "en": "English",
+    "kn": "ಕನ್ನಡ",
+    "label": "Language"
+  },
   "homePage": {
     "header": {
-      "siteTitle": "BookOrbit",
-      "logIn": "Log In",
-      "signUp": "Sign Up"
+      "title": "BookOrbit",
+      "login": "Log In",
+      "signup": "Sign Up"
     },
-    "heroSection": {
-      "title": "Manage Your Library with Ease",
-      "description": "Our library management system helps you organize your books, track borrowings, and manage your library efficiently.",
-      "signUp": "Sign Up",
-      "learnMore": "Learn More"
-    },
-    "features": {
-      "bookCatalog": {
-        "title": "Book Catalog",
-        "description": "Easily manage your book collection with our comprehensive catalog."
+    "main": {
+      "hero": {
+        "title": "Manage Your Library",
+        "withEase": "with Ease",
+        "description": "Streamline your library operations with our powerful management system.",
+        "getStarted": "Get Started"
       },
-      "borrowingTracking": {
-        "title": "Borrowing Tracking",
-        "description": "Keep track of who has borrowed what and when they need to return it."
+      "features": {
+        "bookCatalog": {
+          "title": "Book Catalog",
+          "description": "Easily manage your book collection with our comprehensive catalog."
+        },
+        "borrowingTracking": {
+          "title": "Borrowing Tracking",
+          "description": "Keep track of who has borrowed what and when they need to return it."
+        },
+        "inventoryManagement": {
+          "title": "Inventory Management",
+          "description": "Maintain a clear overview of your library's inventory and stock levels."
+        },
+        "notifications": {
+          "title": "Notifications",
+          "description": "Stay informed about due dates, overdue books, and other important updates."
+        },
+        "accessibility": {
+          "title": "Accessibility",
+          "description": "Our system is designed to be user-friendly and accessible for all."
+        }
       },
-      "inventoryManagement": {
-        "title": "Inventory Management",
-        "description": "Maintain a clear overview of your library's inventory and stock levels."
-      },
-      "notifications": {
-        "title": "Notifications",
-        "description": "Stay informed about due dates, overdue books, and other important updates."
-      },
-      "accessibility": {
-        "title": "Accessibility",
-        "description": "Our system is designed to be user-friendly and accessible for all."
+      "about": {
+        "title": "Simplify Your Library Operations",
+        "description": "Our comprehensive library management system helps you organize, track, and optimize your library's resources and services.",
+        "learnMore": "Learn More"
       }
     },
-    "streamlineSection": {
-      "title": "Streamline Your Library Management",
-      "description": "Our library management system provides a comprehensive solution to help you organize, track, and optimize your library's operations.",
-      "signUp": "Sign Up",
-      "learnMore": "Learn More"
-    },
     "footer": {
-      "copyright": "© 2024 Library Manager. All rights reserved.",
+      "aboutUs": "About Us",
+      "aboutDescription": "BookOrbit is dedicated to revolutionizing library management with cutting-edge technology and user-friendly solutions.",
+      "contact": {
+        "title": "Contact",
+        "address": "123 Library Street\nBooktown, BT 12345\ncontact@bookorbit.com"
+      },
+      "followUs": "Follow Us",
+      "socialLinks": {
+        "facebook": "Facebook",
+        "twitter": "Twitter",
+        "instagram": "Instagram",
+        "linkedIn": "LinkedIn"
+      },
+      "rights": "© 2024 BookOrbit. All rights reserved.",
       "terms": "Terms of Service",
       "privacy": "Privacy Policy"
     }
@@ -64,6 +83,28 @@
       "signInWith": "or sign in with",
       "signUpPrompt": "Don't have an account?",
       "signUpLink": "SignUp"
+    }
+  },
+  "signUpPage": {
+    "header": {
+      "title": "Create an account",
+      "description": "Enter your details to create a new account"
+    },
+    "form": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "signUp": "Sign Up",
+      "signingUp": "Signing Up..."
+    },
+    "footer": {
+      "signUpWith": "or sign up with",
+      "loginPrompt": "Already have an account?",
+      "loginLink": "Login"
     }
   },
   "navContent": {
