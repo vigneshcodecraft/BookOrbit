@@ -4,6 +4,7 @@ import {
   pgEnum,
   pgTable,
   serial,
+  text,
   varchar,
 } from "drizzle-orm/pg-core";
 
@@ -66,6 +67,14 @@ export const TransactionsTable = pgTable("transactions", {
   dueDate: varchar("dueDate", { length: 15 }),
   status: StatusENum("status").notNull(),
   returnDate: varchar("returnDate", { length: 10 }),
+});
+
+export const ProfessorsTable = pgTable("professors", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  department: varchar("department", { length: 255 }).notNull(),
+  bio: text("bio").notNull(),
+  calendlyLink: varchar("calendlyLink", { length: 512 }).notNull(),
 });
 
 // import {

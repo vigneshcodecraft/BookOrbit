@@ -17,12 +17,15 @@ import {
   BookCopy,
   IndianRupee,
   Book,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { borrowBook, fetchUserDetails } from "@/lib/actions";
 import { useToast } from "./hooks/use-toast";
 import { IBook } from "@/lib/books/book.model";
 import Image from "next/image";
+import { motion } from "framer-motion";
+import { useState } from "react";
 
 interface BookCardProps {
   book: IBook;
@@ -30,7 +33,9 @@ interface BookCardProps {
 
 export default function BookCard({ book }: BookCardProps) {
   const { toast } = useToast();
+  const [isHovered, setIsHovered] = useState(false);
 
+  const fallbackImage = "/placeholder.svg?height=400&width=300";
   const handleBorrowBook = async (bookId: number) => {
     const currentUser = await fetchUserDetails();
     const result = await borrowBook(bookId, currentUser?.id!);
@@ -45,57 +50,58 @@ export default function BookCard({ book }: BookCardProps) {
     }
   };
   return (
-    <Card className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer">
-      <div className="relative pb-[60%] sm:pb-[80%]">
+    <motion.div
+      whileHover={{ scale: 1.03 }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="m-4"
+    >
+      <Card className="relative w-full h-[400px] overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-shadow duration-300">
         {book.image ? (
-          <Image
-            src={book.image}
-            layout="fill"
-            objectFit="contain cover "
-            className="rounded-lg shadow-2xl px-1"
-            alt={`Cover of ${book.title}`}
-          />
+          <div className="absolute inset-0">
+            <Image
+              src={book.image}
+              alt={`Cover of ${book.title}`}
+              layout="fill"
+              objectFit="cover"
+            />
+          </div>
         ) : (
-          <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary to-secondary text-primary-foreground p-4">
-            <Book className="h-12 w-12 mb-2" />
-            <h3 className="text-lg font-semibold text-center line-clamp-2">
-              {book.title}
-            </h3>
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-400 to-purple-500">
+            <BookOpen className="h-20 w-20 text-white opacity-50" />
           </div>
         )}
-        <div className="absolute top-2 right-2">
-          <Badge
-            variant={book.availableCopies > 0 ? "default" : "destructive"}
-            className=" ml-2 shrink-0"
-          >
-            {book.availableCopies > 0 ? "Available" : "Not Available"}
-          </Badge>
-        </div>
-      </div>
 
-      <CardHeader className="p-4">
-        <CardTitle className="text-lg font-semibold truncate">
-          {book.title}
-        </CardTitle>
-        <CardDescription className="line-clamp-1">
-          {book.author}
-        </CardDescription>
-      </CardHeader>
-
-      <CardFooter className="p-4 mt-auto">
-        <Button
-          aria-label="borrow"
-          variant="outline"
-          className="w-full bg-black text-white"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleBorrowBook(book.id);
+        <div
+          className={`absolute inset-x-0 bottom-0 p-4 transition-all duration-300 ${
+            book.image ? "bg-white bg-opacity-80" : "bg-transparent"
+          }`}
+          style={{
+            height: isHovered ? "50%" : "40%",
           }}
         >
-          Borrow
-        </Button>
-      </CardFooter>
-    </Card>
+          <div className="h-full flex flex-col justify-between text-black">
+            <div>
+              <h3 className="text-xl font-bold mb-1 line-clamp-2">
+                {book.title}
+              </h3>
+              <p className="text-sm mb-1 line-clamp-1">{book.author}</p>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-semibold">
+                ₹{book.price.toFixed(2)}
+              </span>
+              <Badge
+                variant={book.availableCopies > 0 ? "secondary" : "destructive"}
+                className="ml-2"
+              >
+                {book.availableCopies} / {book.totalCopies}
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </motion.div>
   );
 }
 

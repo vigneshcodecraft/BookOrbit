@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookIcon, BookmarkIcon, WarehouseIcon, Sun, Moon } from "lucide-react";
-import { useTranslations } from "next-intl"; // Assuming you're using next-intl
+import { useTranslations } from "next-intl";
 import ThemeToggle from "@/components/ThemeToggle";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 
@@ -37,7 +37,7 @@ export default function HomePage() {
                   {t("header.signup")}
                 </Button>
               </Link>
-              <ThemeToggle />
+              {/* <ThemeToggle /> */}
               <div className="">
                 <LocaleSwitcher />
               </div>
@@ -147,7 +147,8 @@ export default function HomePage() {
                   src="/placeholder.svg"
                   alt="Library Interior"
                   layout="fill"
-                  className="rounded-lg shadow-2xl"
+                  objectFit="cover"
+                  className="rounded-lg shadow-2xl fill"
                 />
               </div>
               <div className="flex flex-col justify-center animate-fade-in-right">

@@ -46,6 +46,10 @@ export const formatDate = (date: Date): string => {
   return `${day}-${month}-${year}`;
 };
 
+export const formatTime = (date: Date): string => {
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
+
 export const compareDate = (dueDate: string): number => {
   if (new Date() > new Date(dueDate)) {
     return 1;

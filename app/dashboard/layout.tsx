@@ -8,7 +8,7 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <div className="flex h-screen bg-background text-text-primary">
+    <div className="flex h-screen bg-[#f0f4ff] text-[#1e293b]">
       <SideNavBar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <NavBar />

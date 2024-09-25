@@ -20,7 +20,7 @@ import Link from "next/link";
 export default async function Navbar() {
   const currentUser = await fetchUserDetails();
   return (
-    <header className="bg-background-tertiary shadow-sm border-b border-border">
+    <header className="bg-white shadow-sm border-b border-[#e2e8f0]">
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center">
           <Sheet>
@@ -30,7 +30,7 @@ export default async function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0">
-              <div className="p-4 border-b border-border">
+              <div className="p-4 border-b border-[#e2e8f0]">
                 <h2 className="text-lg font-semibold">Menu</h2>
               </div>
               <ScrollArea className="flex-1 px-3 py-2">
@@ -39,8 +39,8 @@ export default async function Navbar() {
             </SheetContent>
           </Sheet>
           <div className="flex items-center ml-2">
-            <BookOpen className="h-8 w-8 text-accent-primary sm:hidden" />
-            <h1 className="text-2xl font-bold text-accent-primary ml-2 hidden sm:inline lg:hidden">
+            <BookOpen className="h-8 w-8 text-[#3b82f6] sm:hidden" />
+            <h1 className="text-2xl font-bold text-[#3b82f6] ml-2 hidden sm:inline lg:hidden">
               BookOrbit
             </h1>
           </div>
@@ -65,7 +65,7 @@ export default async function Navbar() {
                   <p className="text-sm font-medium leading-none">
                     {currentUser?.firstName} {currentUser?.lastName}
                   </p>
-                  <p className="text-xs leading-none text-text-secondary">
+                  <p className="text-xs leading-none text-[#64748b]">
                     {currentUser?.email}
                   </p>
                 </div>

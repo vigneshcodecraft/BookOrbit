@@ -27,7 +27,6 @@ import {
 import SignOut from "../SignOut";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { fetchUserDetails } from "@/lib/actions";
-import SwitchPage from "../SwitchPage";
 import Link from "next/link";
 
 export default async function Navbar() {

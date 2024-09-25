@@ -12,9 +12,11 @@ import { db } from "@/drizzle/drizzleDB";
 import { TransactionRepository } from "./transactions/transaction.repository";
 import { revalidatePath } from "next/cache";
 import { bookBaseSchema, IBook, IBookBase } from "./books/book.model";
+import "dotenv/config";
 import cloudinary from "@/lib/cloudinary";
-import { formatDate } from "./utils";
+import { formatDate, formatTime } from "./utils";
 import { SortOptions } from "./repository";
+import { ProfessorRepository } from "./professors/professor.repository";
 // Create MySQL pool and connect to the database
 
 export interface State {
@@ -26,6 +28,9 @@ export interface State {
 const memberRepo = new MemberRepository(db);
 const bookRepo = new BookRepository(db);
 const transactionRepo = new TransactionRepository(db);
+const professorRepo = new ProfessorRepository(db);
+
+const CALENDLY_API_TOKEN = process.env.NEXT_PUBLIC_CALENDLY_ACCESS_TOKEN!;
 
 export async function fetchUserDetails() {
   const session = await auth();
@@ -59,18 +64,20 @@ export async function registerUser(prevState: State, formData: FormData) {
     email: formData.get("email"),
     password: formData.get("password"),
     role: "user",
+    image: null,
   });
   const confirmPassword = formData.get("confirm-password");
 
   if (!validateFields.success) {
     console.log("Failure");
+    console.log(validateFields.error);
     return {
       errors: validateFields.error.flatten().fieldErrors,
       message: "Missing Fields. Failed to Create Member.",
     };
   }
 
-  const { firstName, lastName, phone, address, email, password, role } =
+  const { firstName, lastName, phone, address, email, password, role, image } =
     validateFields.data;
 
   if (
@@ -104,7 +111,7 @@ export async function registerUser(prevState: State, formData: FormData) {
       role,
       email,
       password: hashedPwd,
-      image: null,
+      image,
     };
 
     console.log(newUser);
@@ -227,6 +234,28 @@ export async function fetchFilteredBooks(
   } catch (error) {
     console.log(error);
     throw new Error("Something went wrong");
+  }
+}
+
+export async function fetchFilteredProfessors(
+  query: string | undefined,
+  currentPage: number,
+  professorPerPage: number
+) {
+  try {
+    const offset = (currentPage - 1) * professorPerPage;
+    const professors = await professorRepo.list({
+      search: query,
+      offset: offset,
+      limit: professorPerPage,
+    });
+    return {
+      professors: professors.items,
+      totalCount: professors.pagination.total,
+    };
+  } catch (error) {
+    console.log(error);
+    throw new Error("Something went wrong while fetching filtered professors");
   }
 }
 
@@ -633,6 +662,19 @@ export async function fetchBookById(id: number) {
   }
 }
 
+export async function fetchProfessorById(id: number) {
+  try {
+    const professor = await professorRepo.getById(id);
+    if (!professor) {
+      throw new Error("Professor Not Found");
+    }
+    return professor;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Something went wrong while fetching professor details");
+  }
+}
+
 export async function fetchMemberById(id: number) {
   try {
     const member = await memberRepo.getById(id);
@@ -877,4 +919,205 @@ export async function uploadImage(file: File) {
   }
 
   return { imageURL: "" };
+}
+
+// export default async function getUserUri() {
+//   try {
+//     const response = await fetch("https://api.calendly.com/users/me", {
+//       method: "GET",
+//       headers: {
+//         Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
+//         "Content-Type": "application/json",
+//       },
+//     });
+//     if (!response.ok) {
+//       throw new Error(`Error fetching user info: ${response.statusText}`);
+//     }
+
+//     const data = await response.json();
+//     return data.resource.uri; // This is the user's URI
+//   } catch (error) {
+//     console.error("Error fetching user URI", error);
+//     throw error;
+//   }
+// }
+
+// // Fetch scheduled events for the user
+// export async function getScheduledEvents() {
+//   const userUri = await getUserUri(); // Get the logged-in user's URI
+
+//   try {
+//     const response = await fetch(
+//       `https://api.calendly.com/scheduled_events?user=${encodeURIComponent(
+//         userUri
+//       )}`,
+//       {
+//         method: "GET",
+//         headers: {
+//           Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+
+//     if (!response.ok) {
+//       const errorText = await response.text();
+//       console.log("Error fetching scheduled events:", errorText);
+//       throw new Error(`Error fetching Calendly events: ${response.statusText}`);
+//     }
+
+//     const data = await response.json();
+
+//     return data.collection; // Return an array of scheduled events
+//   } catch (error) {
+//     console.error("Error fetching scheduled events", error);
+//     throw error;
+//   }
+// }
+
+// export async function getInviteeDetails(event_uuid: string) {
+//   const response = await fetch(
+//     `https://api.calendly.com/scheduled_events/${event_uuid}/invitees`,
+//     {
+//       method: "GET",
+//       headers: {
+//         Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
+//         "Content-Type": "application/json",
+//       },
+//     }
+//   );
+//   if (!response.ok) {
+//     const errorText = await response.text();
+//     console.log("Error fetching scheduled events:", errorText);
+//     throw new Error(`Error fetching Calendly events: ${response.statusText}`);
+//   }
+//   const data = await response.json();
+//   return data.collection[0].email;
+// }
+
+interface IAppointment {
+  date: string;
+  time: string;
+  status: string;
+  eventName: string;
+  professorName: string;
+  meetingUrl: string;
+  uri: string;
+}
+
+// export async function getAppointments(email: string): Promise<IAppointment[]> {
+//   const event = await getScheduledEvents();
+//   const eventDetails = event.map((e: any) => {
+//     const data = {
+//       endTime: e.end_time,
+//       startTime: e.start_time,
+//       status: e.status,
+//       eventName: e.name,
+//       uri: e.uri,
+//       meetingNote: e.meeting_notes_plain,
+//       meetingUrl: e.location.join_url,
+//     };
+//     return data;
+//   });
+//   const details = await Promise.all(
+//     eventDetails.map(async (e: any) => {
+//       const userEmail = await getInviteeDetails(e.uri.split("/")[4]);
+//       const data = { ...e, email: userEmail };
+//       return data;
+//     })
+//   );
+//   return details.filter((detail) => detail.email === email);
+// }
+
+export async function getOrganizationUri() {
+  try {
+    const response = await fetch("https://api.calendly.com/users/me", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error fetching user info: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.resource.current_organization;
+  } catch (error) {
+    console.error("Error fetching organization URI", error);
+    throw error;
+  }
+}
+
+export async function getUsersAppointments(
+  email: string
+): Promise<IAppointment[]> {
+  try {
+    const userUri = await getOrganizationUri();
+    const url = `https://api.calendly.com/scheduled_events?organization=${userUri}&invitee_email=${email}`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Error fetching user info: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const appointments = data.collection.map((info: any) => {
+      const data = {
+        date: new Date(info.start_time).toLocaleDateString(),
+        time: `${formatTime(new Date(info.start_time))} - ${formatTime(
+          new Date(info.end_time)
+        )} `,
+        status: info.status,
+        eventName: info.name,
+        professorName: info.event_memberships[0].user_name,
+        meetingUrl: info.location.join_url,
+        uri: info.uri.split("/")[4],
+      };
+      return data;
+    });
+    return appointments;
+  } catch (error) {
+    console.error("Error fetching user URI", error);
+    throw error;
+  }
+}
+
+export async function cancelAppointments(event_uuid: string) {
+  try {
+    const response = await fetch(
+      `https://api.calendly.com/scheduled_events/${event_uuid}/cancellation`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reason: "User canceled the event",
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Error fetching scheduled events:", errorText);
+      throw new Error(`Error fetching Calendly events: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("Canceled Data", data);
+    return data;
+  } catch (error) {
+    console.error("Failed to cancel appointment");
+  } finally {
+    revalidatePath("/dashboard/appointments");
+  }
 }
