@@ -34,12 +34,6 @@ export default function SideNavbar() {
         <ScrollArea className="flex-1 px-3 py-2">
           <NavContent isSidebarExpanded={isSidebarExpanded} />
         </ScrollArea>
-        <div className="p-4 border-t border-[#e2e8f0]">
-          <Button variant="outline" className="w-full justify-start">
-            <LogOut className="h-5 w-5 mr-2" />
-            {isSidebarExpanded && "Logout"}
-          </Button>
-        </div>
       </aside>
     </div>
   );

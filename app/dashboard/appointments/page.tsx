@@ -76,23 +76,32 @@ export default async function Page() {
                 </div>
                 <span className="font-medium">{appointment.professorName}</span>
               </div>
-            </CardContent>
-            {appointment.status !== "canceled" && (
-              <CardFooter className="bg-primary/5 pt-4 pb-4 rounded-b-lg flex justify-between">
+              <div className=" flex items-center space-x-3 text-sm text-primary/80">
                 {appointment.meetingUrl ? (
                   <Link
                     href={appointment.meetingUrl}
                     className="flex items-center space-x-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200"
                   >
-                    <VideoIcon className="h-5 w-5" />
+                    <div className="bg-primary/10 p-2 rounded-full">
+                      <VideoIcon className="h-4 w-4 text-primary" />
+                    </div>
                     <span>Join Google Meet</span>
                   </Link>
                 ) : (
-                  <p className="flex items-center space-x-2 text-sm font-medium text-primary/80">
-                    <MapPinIcon className="h-5 w-5 text-primary" />
+                  <div className="flex items-center space-x-2 text-sm font-medium text-primary/80">
+                    <div className=" bg-primary/10 p-2 rounded-full">
+                      <MapPinIcon className="h-5 w-5 text-primary" />
+                    </div>
                     <span>Physically Scheduled</span>
-                  </p>
+                  </div>
                 )}
+              </div>
+            </CardContent>
+            {appointment.status !== "canceled" && (
+              <CardFooter className="bg-primary/5 pt-4 pb-4 rounded-b-lg flex justify-between">
+                <Link href={`/dashboard/appointments/${appointment.uri}`}>
+                  <Button variant="default">Reschedule</Button>
+                </Link>
                 <CancelAppointment event_uuid={appointment.uri} />
               </CardFooter>
             )}

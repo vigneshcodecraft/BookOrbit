@@ -56,7 +56,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-background-secondary p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f0f4ff] p-4">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -66,20 +66,20 @@ export default function SignUpPage() {
         <div className="absolute right-8 top-8">
           <LocaleSwitcher />
         </div>
-        <Card className="border-none shadow-lg bg-background-tertiary">
+        <Card className="border-none shadow-lg bg-white">
           <CardHeader className="space-y-1 text-center">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              className="w-16 h-16 bg-accent-primary rounded-full flex items-center justify-center mx-auto mb-4"
+              className="w-16 h-16 bg-[#3b82f6] rounded-full flex items-center justify-center mx-auto mb-4"
             >
               <BookOpenIcon className="w-8 h-8 text-white" />
             </motion.div>
-            <CardTitle className="text-2xl font-bold text-text-primary">
+            <CardTitle className="text-2xl font-bold text-[#1e293b]">
               {t("header.title")}
             </CardTitle>
-            <CardDescription className="text-text-secondary">
+            <CardDescription className="text-[#64748b]">
               {t("header.description")}
             </CardDescription>
           </CardHeader>
@@ -89,7 +89,7 @@ export default function SignUpPage() {
                 <div className="space-y-1">
                   <Label
                     htmlFor="firstName"
-                    className="text-sm font-medium text-text-secondary"
+                    className="text-sm font-medium text-[#64748b]"
                   >
                     {t("form.firstName")}
                   </Label>
@@ -97,7 +97,7 @@ export default function SignUpPage() {
                     id="firstName"
                     name="firstName"
                     placeholder="John"
-                    className="bg-background"
+                    className="bg-[#f8fafc]"
                   />
                   {state?.errors?.firstName && (
                     <span className="text-sm text-red-500">
@@ -108,7 +108,7 @@ export default function SignUpPage() {
                 <div className="space-y-1">
                   <Label
                     htmlFor="lastName"
-                    className="text-sm font-medium text-text-secondary"
+                    className="text-sm font-medium text-[#64748b]"
                   >
                     {t("form.lastName")}
                   </Label>
@@ -116,7 +116,7 @@ export default function SignUpPage() {
                     id="lastName"
                     name="lastName"
                     placeholder="Doe"
-                    className="bg-background"
+                    className="bg-[#f8fafc]"
                   />
                   {state?.errors?.lastName && (
                     <span className="text-sm text-red-500">
@@ -128,7 +128,7 @@ export default function SignUpPage() {
               <div className="space-y-1">
                 <Label
                   htmlFor="email"
-                  className="text-sm font-medium text-text-secondary"
+                  className="text-sm font-medium text-[#64748b]"
                 >
                   {t("form.email")}
                 </Label>
@@ -137,7 +137,7 @@ export default function SignUpPage() {
                   name="email"
                   type="email"
                   placeholder="m@example.com"
-                  className="bg-background"
+                  className="bg-[#f8fafc]"
                 />
                 {state?.errors?.email && (
                   <span className="text-sm text-red-500">
@@ -148,7 +148,7 @@ export default function SignUpPage() {
               <div className="space-y-1">
                 <Label
                   htmlFor="phone"
-                  className="text-sm font-medium text-text-secondary"
+                  className="text-sm font-medium text-[#64748b]"
                 >
                   {t("form.phone")}
                 </Label>
@@ -157,7 +157,7 @@ export default function SignUpPage() {
                   name="phone"
                   type="tel"
                   placeholder="+1 (123) 456-7890"
-                  className="bg-background"
+                  className="bg-[#f8fafc]"
                 />
                 {state?.errors?.phone && (
                   <span className="text-sm text-red-500">
@@ -168,7 +168,7 @@ export default function SignUpPage() {
               <div className="space-y-1">
                 <Label
                   htmlFor="address"
-                  className="text-sm font-medium text-text-secondary"
+                  className="text-sm font-medium text-[#64748b]"
                 >
                   {t("form.address")}
                 </Label>
@@ -176,7 +176,7 @@ export default function SignUpPage() {
                   id="address"
                   name="address"
                   placeholder="123 Main St, Anytown USA"
-                  className="bg-background"
+                  className="bg-[#f8fafc]"
                 />
                 {state?.errors?.address && (
                   <span className="text-sm text-red-500">
@@ -187,7 +187,7 @@ export default function SignUpPage() {
               <div className="space-y-1">
                 <Label
                   htmlFor="password"
-                  className="text-sm font-medium text-text-secondary"
+                  className="text-sm font-medium text-[#64748b]"
                 >
                   {t("form.password")}
                 </Label>
@@ -195,7 +195,7 @@ export default function SignUpPage() {
                   id="password"
                   name="password"
                   type="password"
-                  className="bg-background"
+                  className="bg-[#f8fafc]"
                 />
                 {state?.errors?.password && (
                   <span className="text-sm text-red-500">
@@ -206,7 +206,7 @@ export default function SignUpPage() {
               <div className="space-y-1">
                 <Label
                   htmlFor="confirm-password"
-                  className="text-sm font-medium text-text-secondary"
+                  className="text-sm font-medium text-[#64748b]"
                 >
                   {t("form.confirmPassword")}
                 </Label>
@@ -214,11 +214,11 @@ export default function SignUpPage() {
                   id="confirm-password"
                   name="confirm-password"
                   type="password"
-                  className="bg-background"
+                  className="bg-[#f8fafc]"
                 />
               </div>
               <Button
-                className="w-full bg-accent-primary hover:bg-accent-hover text-white transition-colors duration-300 mt-4"
+                className="w-full bg-[#3b82f6] hover:bg-[#2563eb] text-white transition-colors duration-300 mt-4"
                 type="submit"
                 disabled={isPending}
               >
@@ -234,24 +234,21 @@ export default function SignUpPage() {
           <CardFooter className="flex flex-col space-y-4 pt-0">
             <div className="relative w-full">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
+                <span className="w-full border-t border-[#e2e8f0]" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background-tertiary px-2 text-text-secondary">
+                <span className="bg-background-tertiary px-2 text-[#64748b]">
                   {t("footer.signUpWith")}
                 </span>
               </div>
             </div>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full border-[#e2e8f0]">
               <ChromeIcon className="mr-2 h-4 w-4" />
               Google
             </Button>
-            <div className="text-center text-sm text-text-secondary">
+            <div className="text-center text-sm text-[#64748b]">
               {t("footer.loginPrompt")}{" "}
-              <Link
-                href="/login"
-                className="text-accent-primary hover:underline"
-              >
+              <Link href="/login" className="text-[#3b82f6] hover:underline">
                 {t("footer.loginLink")}
               </Link>
             </div>

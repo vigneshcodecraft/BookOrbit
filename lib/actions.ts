@@ -1069,7 +1069,9 @@ export async function getUsersAppointments(
     }
 
     const data = await response.json();
+
     const appointments = data.collection.map((info: any) => {
+      console.log("invites:", info.calendar_event);
       const data = {
         date: new Date(info.start_time).toLocaleDateString(),
         time: `${formatTime(new Date(info.start_time))} - ${formatTime(
@@ -1083,7 +1085,10 @@ export async function getUsersAppointments(
       };
       return data;
     });
-    return appointments;
+    return appointments.filter(
+      (appointment: IAppointment) =>
+        appointment.date >= new Date().toLocaleDateString()
+    );
   } catch (error) {
     console.error("Error fetching user URI", error);
     throw error;
@@ -1117,6 +1122,34 @@ export async function cancelAppointments(event_uuid: string) {
     return data;
   } catch (error) {
     console.error("Failed to cancel appointment");
+  } finally {
+    revalidatePath("/dashboard/appointments");
+  }
+}
+
+export async function rescheduleAppointments(event_uuid: string) {
+  try {
+    const response = await fetch(
+      `https://api.calendly.com/scheduled_events/${event_uuid}/invitees`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Error fetching scheduled events:", errorText);
+      throw new Error(`Error fetching Calendly events: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.collection[0].reschedule_url;
+  } catch (error) {
+    console.error("Failed to reschedule appointment");
   } finally {
     revalidatePath("/dashboard/appointments");
   }
