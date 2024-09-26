@@ -14,12 +14,12 @@ import {
   handleDeleteMember,
   handleDeleteBook,
   handleDeleteTransaction,
+  handleDeleteProfessor,
 } from "@/lib/actions";
 import { Trash2, TrashIcon } from "lucide-react";
-import { desc } from "drizzle-orm";
 
 export interface AlertDialogBoxProps {
-  tableName: "book" | "member" | "transaction";
+  tableName: "book" | "member" | "transaction" | "professor";
   id: number;
   title?: string;
   description?: string;
@@ -42,7 +42,9 @@ export default function AlertDialogBox({
         ? await handleDeleteMember(id)
         : tableName === "book"
         ? await handleDeleteBook(id)
-        : await handleDeleteTransaction(id);
+        : tableName === "transaction"
+        ? await handleDeleteTransaction(id)
+        : await handleDeleteProfessor(id);
     toast({
       title: result.success ? "Success" : "Error",
       description: result.message,

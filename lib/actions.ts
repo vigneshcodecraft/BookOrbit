@@ -1,6 +1,11 @@
 "use server";
 import bcrypt from "bcrypt";
-import { BooksTable, MembersTable, TransactionsTable } from "@/drizzle/schema";
+import {
+  BooksTable,
+  MembersTable,
+  ProfessorsTable,
+  TransactionsTable,
+} from "@/drizzle/schema";
 import { and, eq } from "drizzle-orm";
 import { auth, signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
@@ -17,6 +22,7 @@ import cloudinary from "@/lib/cloudinary";
 import { formatDate, formatTime } from "./utils";
 import { SortOptions } from "./repository";
 import { ProfessorRepository } from "./professors/professor.repository";
+import { headers } from "next/headers";
 // Create MySQL pool and connect to the database
 
 export interface State {
@@ -356,6 +362,23 @@ export async function handleDeleteMember(id: number) {
     return {
       success: true,
       message: `Member ${member?.firstName} ${member?.lastName} deleted successfully`,
+    };
+  } catch (error: any) {
+    console.error(error);
+    return {
+      error: true,
+      message: "Something went wrong. Please try again.",
+    };
+  }
+}
+
+export async function handleDeleteProfessor(id: number) {
+  try {
+    const professor = await professorRepo.delete(id);
+    revalidatePath("/admin/professor");
+    return {
+      success: true,
+      message: `Professor ${professor?.name} deleted successfully`,
     };
   } catch (error: any) {
     console.error(error);
@@ -1153,4 +1176,75 @@ export async function rescheduleAppointments(event_uuid: string) {
   } finally {
     revalidatePath("/dashboard/appointments");
   }
+}
+
+export async function handleInviteProfessor(email: string) {
+  try {
+    const uuid = await getOrganizationUri();
+    console.log("uuid:", uuid.split("/")[4]);
+    const response = await fetch(
+      `https://api.calendly.com/organizations/${
+        uuid.split("/")[4]
+      }/invitations`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          role: "user",
+        }),
+      }
+    );
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
+    }
+    const data = await response.json();
+    console.log("Invitation response:", data);
+    return data;
+  } catch (error: any) {
+    console.error("Full error object:", error);
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error("Error response:", error.response);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error("Error request:", error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error("Error message:", error.message);
+    }
+    throw new Error(
+      error.response?.data?.message || "Error sending invitation"
+    );
+  }
+}
+
+export async function handleCalendlyWebhook(payload: any) {
+  if (payload.event === 'invitee.created' && payload.payload.status === 'active') {
+    try {
+      const newProfessor = await db.insert(ProfessorsTable).values({
+        name: payload.payload.name,
+        email: payload.payload.email,
+        // Set default values for other fields
+        department: 'Not specified', // You might want to update this later
+        bio: '', // Empty bio by default
+        calendlyLink: payload.payload.scheduling_url || '', // Use the Calendly scheduling URL if available
+      }).returning();
+
+      console.log('New professor added:', newProfessor[0]);
+      return { message: 'Professor added successfully', professor: newProfessor[0] };
+    } catch (error) {
+      console.error('Error adding professor:', error);
+      throw new Error('Error adding professor to database');
+    }
+  }
+
+  return { message: 'Webhook received' };
 }

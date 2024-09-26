@@ -11,6 +11,7 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
+  User,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -35,6 +36,11 @@ export default function Sidebar() {
       icon: <AlertCircle className="h-5 w-5" />,
       label: "Requests",
       value: "requests",
+    },
+    {
+      icon: <User className="h-5 w-5" />,
+      label: "Professors",
+      value: "professors",
     },
     // {
     //   icon: <Clock className="h-5 w-5" />,

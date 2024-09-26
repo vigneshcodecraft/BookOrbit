@@ -71,10 +71,11 @@ export const TransactionsTable = pgTable("transactions", {
 
 export const ProfessorsTable = pgTable("professors", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
-  department: varchar("department", { length: 255 }).notNull(),
-  bio: text("bio").notNull(),
-  calendlyLink: varchar("calendlyLink", { length: 512 }).notNull(),
+  name: varchar("name", { length: 255 }),
+  email: varchar("email", { length: 255 }).unique(),
+  department: varchar("department", { length: 255 }),
+  bio: text("bio"),
+  calendlyLink: varchar("calendlyLink", { length: 512 }),
 });
 
 // import {
