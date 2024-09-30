@@ -4,14 +4,23 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import Pagination from "./Pagination";
 import { BookOpen, Briefcase, User } from "lucide-react";
+import { fetchUserDetails } from "@/lib/actions";
+import { ICustomer } from "./RazorPay";
+import AppointmentDialog from "./AppointmentDialog";
 
-export default function ProfessorSection({
+export default async function ProfessorSection({
   professors,
   totalPages,
 }: {
   professors: IProfessor[];
   totalPages: number;
 }) {
+  const currentUser = await fetchUserDetails();
+  const customer: ICustomer = {
+    name: currentUser?.firstName + " " + currentUser?.lastName,
+    email: currentUser?.email!,
+    phone: currentUser?.phone!.toString()!,
+  };
   return (
     <div className="container mx-auto p-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -54,14 +63,11 @@ export default function ProfessorSection({
               </div>
             </CardContent>
             <CardFooter className="bg-primary/5 p-4">
-              <Link
-                href={`/dashboard/professors/${professor.id}`}
-                className="w-full"
-              >
-                <Button className="w-full bg-primary text-white hover:bg-primary/90 transition-colors duration-300">
-                  Book Appointment
-                </Button>
-              </Link>
+              <AppointmentDialog
+                customer={customer}
+                professor={professor}
+                amount={300}
+              />
             </CardFooter>
           </Card>
         ))}

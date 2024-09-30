@@ -977,80 +977,6 @@ export async function uploadImage(file: File) {
   return { imageURL: "" };
 }
 
-// export default async function getUserUri() {
-//   try {
-//     const response = await fetch("https://api.calendly.com/users/me", {
-//       method: "GET",
-//       headers: {
-//         Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
-//         "Content-Type": "application/json",
-//       },
-//     });
-//     if (!response.ok) {
-//       throw new Error(`Error fetching user info: ${response.statusText}`);
-//     }
-
-//     const data = await response.json();
-//     return data.resource.uri; // This is the user's URI
-//   } catch (error) {
-//     console.error("Error fetching user URI", error);
-//     throw error;
-//   }
-// }
-
-// // Fetch scheduled events for the user
-// export async function getScheduledEvents() {
-//   const userUri = await getUserUri(); // Get the logged-in user's URI
-
-//   try {
-//     const response = await fetch(
-//       `https://api.calendly.com/scheduled_events?user=${encodeURIComponent(
-//         userUri
-//       )}`,
-//       {
-//         method: "GET",
-//         headers: {
-//           Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-
-//     if (!response.ok) {
-//       const errorText = await response.text();
-//       console.log("Error fetching scheduled events:", errorText);
-//       throw new Error(`Error fetching Calendly events: ${response.statusText}`);
-//     }
-
-//     const data = await response.json();
-
-//     return data.collection; // Return an array of scheduled events
-//   } catch (error) {
-//     console.error("Error fetching scheduled events", error);
-//     throw error;
-//   }
-// }
-
-// export async function getInviteeDetails(event_uuid: string) {
-//   const response = await fetch(
-//     `https://api.calendly.com/scheduled_events/${event_uuid}/invitees`,
-//     {
-//       method: "GET",
-//       headers: {
-//         Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
-//         "Content-Type": "application/json",
-//       },
-//     }
-//   );
-//   if (!response.ok) {
-//     const errorText = await response.text();
-//     console.log("Error fetching scheduled events:", errorText);
-//     throw new Error(`Error fetching Calendly events: ${response.statusText}`);
-//   }
-//   const data = await response.json();
-//   return data.collection[0].email;
-// }
-
 interface IAppointment {
   date: string;
   time: string;
@@ -1060,30 +986,6 @@ interface IAppointment {
   meetingUrl: string;
   uri: string;
 }
-
-// export async function getAppointments(email: string): Promise<IAppointment[]> {
-//   const event = await getScheduledEvents();
-//   const eventDetails = event.map((e: any) => {
-//     const data = {
-//       endTime: e.end_time,
-//       startTime: e.start_time,
-//       status: e.status,
-//       eventName: e.name,
-//       uri: e.uri,
-//       meetingNote: e.meeting_notes_plain,
-//       meetingUrl: e.location.join_url,
-//     };
-//     return data;
-//   });
-//   const details = await Promise.all(
-//     eventDetails.map(async (e: any) => {
-//       const userEmail = await getInviteeDetails(e.uri.split("/")[4]);
-//       const data = { ...e, email: userEmail };
-//       return data;
-//     })
-//   );
-//   return details.filter((detail) => detail.email === email);
-// }
 
 export async function getOrganizationUri() {
   try {
@@ -1112,7 +1014,11 @@ export async function getUsersAppointments(
 ): Promise<IAppointment[]> {
   try {
     const userUri = await getOrganizationUri();
-    const url = `https://api.calendly.com/scheduled_events?organization=${userUri}&invitee_email=${email}`;
+    const currentTime = new Date().toISOString();
+    const futureTime = new Date(
+      new Date().getTime() + 14 * 24 * 60 * 60 * 1000
+    ).toISOString();
+    const url = `https://api.calendly.com/scheduled_events?organization=${userUri}&min_start_time=${currentTime} &max_start_time=${futureTime}&invitee_email=${email}`;
     const response = await fetch(url, {
       method: "GET",
       headers: {

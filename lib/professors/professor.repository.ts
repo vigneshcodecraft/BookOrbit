@@ -111,7 +111,9 @@ export class ProfessorRepository
       const professors = await this.db
         .select()
         .from(ProfessorsTable)
-        .where(and(whereExpression))
+        .where(
+          and(whereExpression, eq(ProfessorsTable.inviteStatus, "Accepted"))
+        )
         .limit(params.limit)
         .offset(params.offset);
 
