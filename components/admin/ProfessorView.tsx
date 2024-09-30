@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Edit, Trash2 } from "lucide-react";
+import { Search, Plus, Edit, Trash2, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -53,32 +53,31 @@ export default function ProfessorView({
   totalPages: number;
 }) {
   const { toast } = useToast();
-  const [inviteEmail, setInviteEmail] = useState("");
-  const handleInvite = async () => {
-    const result = await handleInviteProfessor(inviteEmail);
-    console.log(result);
-    toast({
-      title: result.resource ? "Success" : "Error",
-      description: result.resource
-        ? "Invitation sent successfully"
-        : result.message,
-      variant: result.resource ? "success" : "destructive",
-      duration: 2000,
-    });
-  };
-  const handleDelete = async (id: number) => {
-    const result = await handleDeleteProfessor(id);
-    toast({
-      title: result.success ? "Success" : "Error",
-      description: result.message,
-      variant: result.success ? "success" : "destructive", // Use the correct variant for success/error
-      duration: 2000,
-    });
-  };
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const handleRefreshProfessors = async () => {
-    console.log("Refreshing professors...");
-    const result = await refreshProfessors();
-    console.log(result);
+    setIsRefreshing(true);
+    try {
+      console.log("Refreshing professors...");
+      const result = await refreshProfessors();
+      console.log(result);
+      toast({
+        title: "Refresh Successful",
+        description: "Professor list has been updated.",
+        variant: "success",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Error refreshing professors:", error);
+      toast({
+        title: "Refresh Failed",
+        description: "An error occurred while refreshing the professor list.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   return (
@@ -111,8 +110,20 @@ export default function ProfessorView({
             </Select>
           </div> */}
           <SearchBar placeholder="Search professors..." />
-          <Button onClick={handleRefreshProfessors}>Refresh Professors</Button>
-          <ProfessorDialog />
+          <div className="flex space-x-2">
+            <Button
+              onClick={handleRefreshProfessors}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600"
+              variant="outline"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+              />
+              {isRefreshing ? "Refreshing..." : "Refresh"}
+            </Button>
+            <ProfessorDialog />
+          </div>
         </div>
         <div className="rounded-md border">
           <Table>

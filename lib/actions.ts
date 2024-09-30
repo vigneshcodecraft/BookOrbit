@@ -28,6 +28,8 @@ import {
   professorBaseSchema,
   professorSchema,
 } from "./professors/professor.model";
+import Razorpay from "razorpay";
+
 // Create MySQL pool and connect to the database
 
 export interface State {
@@ -42,6 +44,32 @@ const transactionRepo = new TransactionRepository(db);
 const professorRepo = new ProfessorRepository(db);
 
 const CALENDLY_API_TOKEN = process.env.NEXT_PUBLIC_CALENDLY_ACCESS_TOKEN!;
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
+});
+
+export async function createOrder(
+  amount: number,
+  currency: string,
+  receipt: string,
+  notes: Record<string, string>
+) {
+  try {
+    const order = await razorpay.orders.create({
+      amount: amount * 100,
+      currency: currency,
+      receipt: receipt,
+      notes: notes,
+    });
+
+    return { success: true, order };
+  } catch (error) {
+    console.error("Error creating order:", error);
+    return { success: false, error: "Error creating order" };
+  }
+}
 
 export async function fetchUserDetails() {
   const session = await auth();
@@ -1360,7 +1388,7 @@ async function getCalendlyInvitation(
 
     if (userInvitation.status === "accepted") {
       const userUuid = userInvitation.user.split("/")[4];
-      const userCalendlyLink = await fetch(
+      const userData = await fetch(
         `https://api.calendly.com/users/${userUuid}`,
         {
           method: "GET",
@@ -1370,7 +1398,7 @@ async function getCalendlyInvitation(
           },
         }
       );
-      const data = await userCalendlyLink.json();
+      const data = await userData.json();
       return data.resource.scheduling_url;
     }
     return null;
