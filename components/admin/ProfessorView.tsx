@@ -22,7 +22,11 @@ import {
 } from "@/components/ui/select";
 import { IMember } from "@/lib/members/member.model";
 import { useToast } from "../hooks/use-toast";
-import { handleDeleteMember, handleDeleteProfessor } from "@/lib/actions";
+import {
+  handleDeleteMember,
+  handleDeleteProfessor,
+  refreshProfessors,
+} from "@/lib/actions";
 import SearchBar from "../SearchBar";
 import Link from "next/link";
 import Pagination from "../Pagination";
@@ -40,6 +44,7 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { handleInviteProfessor } from "@/lib/actions";
+import ProfessorDialog from "./ProfessorDialog";
 export default function ProfessorView({
   professors,
   totalPages,
@@ -69,6 +74,11 @@ export default function ProfessorView({
       variant: result.success ? "success" : "destructive", // Use the correct variant for success/error
       duration: 2000,
     });
+  };
+  const handleRefreshProfessors = async () => {
+    console.log("Refreshing professors...");
+    const result = await refreshProfessors();
+    console.log(result);
   };
 
   return (
@@ -101,42 +111,20 @@ export default function ProfessorView({
             </Select>
           </div> */}
           <SearchBar placeholder="Search professors..." />
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Invite User
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Invite a New Professor</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Enter the email address of the professor you want to invite.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <Input
-                type="email"
-                placeholder="professor@university.edu"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-              />
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleInvite}>
-                  Send Invitation
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button onClick={handleRefreshProfessors}>Refresh Professors</Button>
+          <ProfessorDialog />
         </div>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Department Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Department</TableHead>
                 <TableHead>Bio</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Calendly Link</TableHead>
+
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -144,8 +132,10 @@ export default function ProfessorView({
               {professors.map((professor) => (
                 <TableRow key={professor.id}>
                   <TableCell>{professor.name}</TableCell>
+                  <TableCell>{professor.email}</TableCell>
                   <TableCell>{professor.department}</TableCell>
                   <TableCell>{professor.bio}</TableCell>
+                  <TableCell>{professor.inviteStatus}</TableCell>
                   <TableCell>{professor.calendlyLink}</TableCell>
                   <TableCell className="flex">
                     <Link href={`/admin/professors/${professor.id}/edit`}>

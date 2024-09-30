@@ -23,6 +23,11 @@ import { formatDate, formatTime } from "./utils";
 import { SortOptions } from "./repository";
 import { ProfessorRepository } from "./professors/professor.repository";
 import { headers } from "next/headers";
+import { z } from "zod";
+import {
+  professorBaseSchema,
+  professorSchema,
+} from "./professors/professor.model";
 // Create MySQL pool and connect to the database
 
 export interface State {
@@ -1094,7 +1099,6 @@ export async function getUsersAppointments(
     const data = await response.json();
 
     const appointments = data.collection.map((info: any) => {
-      console.log("invites:", info.calendar_event);
       const data = {
         date: new Date(info.start_time).toLocaleDateString(),
         time: `${formatTime(new Date(info.start_time))} - ${formatTime(
@@ -1194,7 +1198,6 @@ export async function handleInviteProfessor(email: string) {
         },
         body: JSON.stringify({
           email: email,
-          role: "user",
         }),
       }
     );
@@ -1205,6 +1208,7 @@ export async function handleInviteProfessor(email: string) {
       );
     }
     const data = await response.json();
+
     console.log("Invitation response:", data);
     return data;
   } catch (error: any) {
@@ -1227,24 +1231,151 @@ export async function handleInviteProfessor(email: string) {
 }
 
 export async function handleCalendlyWebhook(payload: any) {
-  if (payload.event === 'invitee.created' && payload.payload.status === 'active') {
+  console.log("payload:", payload);
+  if (
+    payload.event === "invitee.created" &&
+    payload.payload.status === "active"
+  ) {
     try {
-      const newProfessor = await db.insert(ProfessorsTable).values({
-        name: payload.payload.name,
-        email: payload.payload.email,
-        // Set default values for other fields
-        department: 'Not specified', // You might want to update this later
-        bio: '', // Empty bio by default
-        calendlyLink: payload.payload.scheduling_url || '', // Use the Calendly scheduling URL if available
-      }).returning();
+      const newProfessor = await db
+        .insert(ProfessorsTable)
+        .values({
+          name: payload.payload.name,
+          email: payload.payload.email,
+          department: "Not specified",
+          bio: "",
+          calendlyLink: payload.payload.scheduling_url || "",
+        })
+        .returning();
 
-      console.log('New professor added:', newProfessor[0]);
-      return { message: 'Professor added successfully', professor: newProfessor[0] };
+      console.log("New professor added:", newProfessor[0]);
+      return {
+        message: "Professor added successfully",
+        professor: newProfessor[0],
+      };
     } catch (error) {
-      console.error('Error adding professor:', error);
-      throw new Error('Error adding professor to database');
+      console.error("Error adding professor:", error);
+      throw new Error("Error adding professor to database");
     }
   }
 
-  return { message: 'Webhook received' };
+  return { message: "Webhook received" };
+}
+
+export async function addProfessor(formData: FormData) {
+  const validatedFields = professorBaseSchema.safeParse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+    department: formData.get("department"),
+    bio: formData.get("bio"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  const { name, email, department, bio } = validatedFields.data;
+
+  try {
+    // Check if the email already exists
+    const existingProfessor = await professorRepo.getByEmail(email);
+
+    if (existingProfessor) {
+      return {
+        success: false,
+        errors: {
+          email: ["This email is already associated with a professor"],
+        },
+      };
+    }
+
+    const newProfessor = await professorRepo.create({
+      name,
+      email,
+      department,
+      bio: bio || "",
+    });
+
+    await handleInviteProfessor(email);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to add professor:", error);
+    return { success: false, errors: { form: ["Failed to add professor"] } };
+  }
+}
+
+export async function refreshProfessors() {
+  try {
+    const pendingProfessors = await professorRepo.getPendingProfessors();
+    if (pendingProfessors.length === 0) {
+      return { success: true };
+    }
+
+    const organizationUri = await getOrganizationUri();
+    const uuid = organizationUri.split("/")[4];
+
+    for (const professor of pendingProfessors) {
+      const invitation = await getCalendlyInvitation(uuid, professor.email!);
+
+      if (invitation) {
+        const updatedProfessor = await professorRepo.update(professor.id, {
+          calendlyLink: invitation,
+          inviteStatus: "Accepted",
+        });
+      }
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error refreshing professors:", error);
+    return { success: false, error: "Failed to refresh professors" };
+  }
+}
+
+async function getCalendlyInvitation(
+  uuid: string,
+  email: string
+): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `https://api.calendly.com/organizations/${uuid}/invitations?email=${email}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    const userInvitation =
+      responseData.collection[responseData.collection.length - 1];
+
+    if (userInvitation.status === "accepted") {
+      const userUuid = userInvitation.user.split("/")[4];
+      const userCalendlyLink = await fetch(
+        `https://api.calendly.com/users/${userUuid}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await userCalendlyLink.json();
+      return data.resource.scheduling_url;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching Calendly invitations:", error);
+    throw new Error("Error fetching Calendly invitations");
+  }
 }

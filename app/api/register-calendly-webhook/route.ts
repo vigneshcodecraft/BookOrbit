@@ -10,37 +10,36 @@ export async function GET(request: Request) {
 
   const apiUrl = "https://api.calendly.com/webhook_subscriptions";
   const apiKey = process.env.NEXT_PUBLIC_CALENDLY_ACCESS_TOKEN;
-  const organizationUrl = `https://api.calendly.com/organizations/${process.env.CALENDLY_ORGANIZATION_ID}`;
 
   try {
     const response = await fetch(apiUrl, {
-      method: "POST",
+      method: "GET",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        url: `${process.env.NEXT_PUBLIC_APP_URL}/api/calendly-webhook`,
-        events: ["invitee.created"],
-        organization: organizationUrl,
-        scope: "organization",
-      }),
     });
+    console.log("response:", response);
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorBody = await response.text();
+      console.error("Error fetching webhooks:", errorBody);
+      throw new Error(
+        `HTTP error! status: ${response.status}, body: ${errorBody}`
+      );
     }
 
-    const data = await response.json();
-    console.log("Webhook registered:", data);
+    const webhooks = await response.json();
+    console.log("Existing webhooks:", JSON.stringify(webhooks, null, 2));
+
     return NextResponse.json({
-      message: "Webhook registered successfully",
-      data,
+      message: "Webhooks retrieved successfully",
+      data: webhooks,
     });
-  } catch (error) {
-    console.error("Error registering webhook:", error);
+  } catch (error: any) {
+    console.error("Error fetching webhooks:", error);
     return NextResponse.json(
-      { error: "Failed to register webhook" },
+      { error: "Failed to fetch webhooks", details: error.message },
       { status: 500 }
     );
   }

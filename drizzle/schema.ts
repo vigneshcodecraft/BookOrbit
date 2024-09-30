@@ -69,12 +69,15 @@ export const TransactionsTable = pgTable("transactions", {
   returnDate: varchar("returnDate", { length: 10 }),
 });
 
+export const InviteStatusEnum = pgEnum("inviteStatus", ["Accepted", "Pending"]);
+
 export const ProfessorsTable = pgTable("professors", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 255 }).unique(),
   department: varchar("department", { length: 255 }),
   bio: text("bio"),
+  inviteStatus: InviteStatusEnum("inviteStatus").default("Pending"),
   calendlyLink: varchar("calendlyLink", { length: 512 }),
 });
 

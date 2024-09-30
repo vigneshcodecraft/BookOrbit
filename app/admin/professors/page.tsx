@@ -1,6 +1,10 @@
 import MembersView from "@/components/admin/MembersView";
 import ProfessorView from "@/components/admin/ProfessorView";
-import { fetchFilteredProfessors, fetchUserDetails } from "@/lib/actions";
+import {
+  fetchFilteredProfessors,
+  fetchUserDetails,
+  refreshProfessors,
+} from "@/lib/actions";
 
 export default async function Page({
   searchParams,

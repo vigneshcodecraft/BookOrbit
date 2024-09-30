@@ -1,4 +1,4 @@
-import { count, eq, like, or } from "drizzle-orm";
+import { and, count, eq, ilike, like, or } from "drizzle-orm";
 import { IPageRequest, IPagedResponse } from "../pagination.response";
 import { IRepository } from "../repository";
 import { ProfessorsTable } from "../../drizzle/schema";
@@ -14,6 +14,8 @@ export class ProfessorRepository
     try {
       const newMember: Omit<IProfessor, "id"> = {
         ...professorData,
+        inviteStatus: "Pending",
+        calendlyLink: "",
       };
 
       const [result] = await this.db
@@ -100,22 +102,25 @@ export class ProfessorRepository
       const search = params.search?.toLowerCase();
       const whereExpression = search
         ? or(
-            like(ProfessorsTable.name, `%${search}%`),
-            like(ProfessorsTable.department, `%${search}%`)
+            ilike(ProfessorsTable.name, `%${search}%`),
+            ilike(ProfessorsTable.department, `%${search}%`),
+            ilike(ProfessorsTable.email, `%${search}%`)
           )
         : undefined;
 
       const professors = await this.db
         .select()
         .from(ProfessorsTable)
-        .where(whereExpression)
+        .where(and(whereExpression))
         .limit(params.limit)
         .offset(params.offset);
 
       const [result] = await this.db
         .select({ count: count() })
         .from(ProfessorsTable)
-        .where(whereExpression);
+        .where(
+          and(whereExpression, eq(ProfessorsTable.inviteStatus, "Accepted"))
+        );
 
       const totalCount = result.count;
 
@@ -135,7 +140,28 @@ export class ProfessorRepository
   async totalProfessors(): Promise<number> {
     const countProfessor = await this.db
       .select({ count: count() })
-      .from(ProfessorsTable);
+      .from(ProfessorsTable)
+      .where(eq(ProfessorsTable.inviteStatus, "Accepted"));
     return countProfessor[0].count;
+  }
+
+  async getByEmail(email: string): Promise<IProfessor | null> {
+    const professor = await this.db
+      .select()
+      .from(ProfessorsTable)
+      .where(eq(ProfessorsTable.email, email))
+      .limit(1);
+    if (professor) {
+      return professor[0] as IProfessor;
+    }
+    return null;
+  }
+
+  async getPendingProfessors() {
+    const pendingProfessors = await this.db
+      .select()
+      .from(ProfessorsTable)
+      .where(eq(ProfessorsTable.inviteStatus, "Pending"));
+    return pendingProfessors;
   }
 }
