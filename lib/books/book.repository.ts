@@ -1,10 +1,5 @@
 import "dotenv/config";
-import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import {
-  BooksTable,
-  MembersTable,
-  TransactionsTable,
-} from "../../drizzle/schema";
+import { BooksTable, TransactionsTable } from "../../drizzle/schema";
 import { and, asc, count, desc, eq, ilike, like, or } from "drizzle-orm";
 import { IPageRequest, IPagedResponse } from "../pagination.response";
 import { IRepository, SortOptions } from "../repository";

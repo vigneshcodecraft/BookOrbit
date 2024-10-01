@@ -44,13 +44,17 @@ export default function AlertDialogBox({
         ? await handleDeleteBook(id)
         : tableName === "transaction"
         ? await handleDeleteTransaction(id)
-        : await handleDeleteProfessor(id);
-    toast({
-      title: result.success ? "Success" : "Error",
-      description: result.message,
-      variant: result.success ? "success" : "destructive", // Use the correct variant for success/error
-      duration: 2000,
-    });
+        : tableName === "professor"
+        ? await handleDeleteProfessor(id)
+        : null;
+    if (result) {
+      toast({
+        title: result.success ? "Success" : "Error",
+        description: result.message,
+        variant: result.success ? "success" : "destructive", // Use the correct variant for success/error
+        duration: 2000,
+      });
+    }
   };
   return (
     <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

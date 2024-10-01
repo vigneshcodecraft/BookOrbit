@@ -97,7 +97,10 @@ export class ProfessorRepository
     }
   }
 
-  async list(params: IPageRequest): Promise<IPagedResponse<IProfessor>> {
+  async list(
+    params: IPageRequest,
+    status?: "Accepted" | "Pending"
+  ): Promise<IPagedResponse<IProfessor>> {
     try {
       const search = params.search?.toLowerCase();
       const whereExpression = search
@@ -107,22 +110,24 @@ export class ProfessorRepository
             ilike(ProfessorsTable.email, `%${search}%`)
           )
         : undefined;
-
+      let inviteStatus;
+      if (status) {
+        inviteStatus =
+          status === "Accepted"
+            ? eq(ProfessorsTable.inviteStatus, "Accepted")
+            : eq(ProfessorsTable.inviteStatus, "Pending");
+      }
       const professors = await this.db
         .select()
         .from(ProfessorsTable)
-        .where(
-          and(whereExpression, eq(ProfessorsTable.inviteStatus, "Accepted"))
-        )
+        .where(and(whereExpression, inviteStatus))
         .limit(params.limit)
         .offset(params.offset);
 
       const [result] = await this.db
         .select({ count: count() })
         .from(ProfessorsTable)
-        .where(
-          and(whereExpression, eq(ProfessorsTable.inviteStatus, "Accepted"))
-        );
+        .where(and(whereExpression, inviteStatus));
 
       const totalCount = result.count;
 

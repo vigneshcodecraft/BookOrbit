@@ -1,6 +1,7 @@
 import {
   bigint,
   integer,
+  numeric,
   pgEnum,
   pgTable,
   serial,
@@ -79,6 +80,28 @@ export const ProfessorsTable = pgTable("professors", {
   bio: text("bio"),
   inviteStatus: InviteStatusEnum("inviteStatus").default("Pending"),
   calendlyLink: varchar("calendlyLink", { length: 512 }),
+});
+
+export const PaymentStatusEnum = pgEnum("payment_status", [
+  "paid",
+  "failed",
+  "pending",
+]);
+
+export const PaymentsTable = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  orderId: varchar("order_id", { length: 255 }).notNull(),
+  paymentId: varchar("payment_id", { length: 255 }).notNull().unique(),
+  amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  status: PaymentStatusEnum("status").notNull(),
+  memberId: integer("member_id")
+    .notNull()
+    .references(() => MembersTable.id),
+  professorId: integer("professor_id")
+    .notNull()
+    .references(() => ProfessorsTable.id),
+  appointmentId: varchar("appointment_id", { length: 255 }),
 });
 
 // import {

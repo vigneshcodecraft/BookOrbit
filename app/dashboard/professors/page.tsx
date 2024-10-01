@@ -16,7 +16,8 @@ export default async function Page({
   const { professors, totalCount } = await fetchFilteredProfessors(
     query,
     currentPage,
-    professorsPerPage
+    professorsPerPage,
+    "Accepted"
   );
   const totalPages = Math.ceil(Number(totalCount) / professorsPerPage);
   if (professors.length === 0) {

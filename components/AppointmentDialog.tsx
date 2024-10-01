@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,30 +8,38 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { Button } from "./ui/button";
-import Razorpay, { ICustomer } from "@/components/RazorPay";
+import RazorPay, { ICustomer } from "@/components/RazorPay";
 import { IProfessor } from "@/lib/professors/professor.model";
 import { IndianRupee, User } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface AppointmentDialogProps {
   professor: IProfessor;
   amount: number;
   customer: ICustomer;
+  open: boolean;
 }
 
 export default function AppointmentDialog({
   customer,
   professor,
   amount,
+  open,
 }: AppointmentDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(open);
+
+  useEffect(() => {
+    setIsOpen(open);
+  }, [open]);
+
+  const handleClose = () => {
+    setIsOpen(false);
+    router.back();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="w-full bg-primary text-white hover:bg-primary/90 transition-colors duration-300">
-          Book Appointment
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-primary mb-4">
@@ -57,9 +65,10 @@ export default function AppointmentDialog({
               <span className="text-lg font-bold text-primary">{amount}</span>
             </div>
           </div>
-          <Razorpay
+          <RazorPay
             amount={amount}
             customer={customer}
+            professor={professor}
             redirectUrl={`/dashboard/professors/${professor.id}`}
           />
         </div>

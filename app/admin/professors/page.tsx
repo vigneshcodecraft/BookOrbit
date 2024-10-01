@@ -1,4 +1,3 @@
-import MembersView from "@/components/admin/MembersView";
 import ProfessorView from "@/components/admin/ProfessorView";
 import {
   fetchFilteredProfessors,

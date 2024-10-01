@@ -20,7 +20,9 @@ export default async function ProfessorSection({
     name: currentUser?.firstName + " " + currentUser?.lastName,
     email: currentUser?.email!,
     phone: currentUser?.phone!.toString()!,
+    id: currentUser?.id!,
   };
+
   return (
     <div className="container mx-auto p-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -63,11 +65,11 @@ export default async function ProfessorSection({
               </div>
             </CardContent>
             <CardFooter className="bg-primary/5 p-4">
-              <AppointmentDialog
-                customer={customer}
-                professor={professor}
-                amount={300}
-              />
+              <Link href={`/dashboard/professors/${professor.id}`}>
+                <Button className="w-full bg-primary text-white hover:bg-primary/90 transition-colors duration-300">
+                  Book Appointment
+                </Button>
+              </Link>
             </CardFooter>
           </Card>
         ))}

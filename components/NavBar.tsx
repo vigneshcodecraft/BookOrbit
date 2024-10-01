@@ -76,7 +76,6 @@ export default async function Navbar() {
                 <Link href="/dashboard/profile">Profile</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <LogOut className="mr-2 h-4 w-4" />
                 <SignOut />
               </DropdownMenuItem>
             </DropdownMenuContent>

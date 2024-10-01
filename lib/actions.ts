@@ -22,13 +22,10 @@ import cloudinary from "@/lib/cloudinary";
 import { formatDate, formatTime } from "./utils";
 import { SortOptions } from "./repository";
 import { ProfessorRepository } from "./professors/professor.repository";
-import { headers } from "next/headers";
-import { z } from "zod";
-import {
-  professorBaseSchema,
-  professorSchema,
-} from "./professors/professor.model";
+import { professorBaseSchema } from "./professors/professor.model";
 import Razorpay from "razorpay";
+import { PaymentRepository } from "./payments/payment.repository";
+import { IPaymentBase } from "./payments/payment.model";
 
 // Create MySQL pool and connect to the database
 
@@ -42,6 +39,7 @@ const memberRepo = new MemberRepository(db);
 const bookRepo = new BookRepository(db);
 const transactionRepo = new TransactionRepository(db);
 const professorRepo = new ProfessorRepository(db);
+const paymentRepo = new PaymentRepository(db);
 
 const CALENDLY_API_TOKEN = process.env.NEXT_PUBLIC_CALENDLY_ACCESS_TOKEN!;
 
@@ -73,11 +71,17 @@ export async function createOrder(
 
 export async function fetchUserDetails() {
   const session = await auth();
-  if (!session) return;
+  if (!session) {
+    redirect("/login");
+  }
   console.log(session.user);
-  if (!session.user) return;
+  if (!session.user) {
+    redirect("/login");
+  }
   const user = await findUserByEmail(session.user.email!);
-  if (!user) return;
+  if (!user) {
+    redirect("/login");
+  }
   const image = session.user.image as string | undefined;
   return { ...user, image };
 }
@@ -279,15 +283,19 @@ export async function fetchFilteredBooks(
 export async function fetchFilteredProfessors(
   query: string | undefined,
   currentPage: number,
-  professorPerPage: number
+  professorPerPage: number,
+  status?: "Accepted" | "Pending"
 ) {
   try {
     const offset = (currentPage - 1) * professorPerPage;
-    const professors = await professorRepo.list({
-      search: query,
-      offset: offset,
-      limit: professorPerPage,
-    });
+    const professors = await professorRepo.list(
+      {
+        search: query,
+        offset: offset,
+        limit: professorPerPage,
+      },
+      status
+    );
     return {
       professors: professors.items,
       totalCount: professors.pagination.total,
@@ -407,11 +415,11 @@ export async function handleDeleteMember(id: number) {
 
 export async function handleDeleteProfessor(id: number) {
   try {
-    const professor = await professorRepo.delete(id);
+    const professor = await removeProfessorFromOrganization(id);
     revalidatePath("/admin/professor");
     return {
       success: true,
-      message: `Professor ${professor?.name} deleted successfully`,
+      message: `Professor deleted successfully`,
     };
   } catch (error: any) {
     console.error(error);
@@ -1046,10 +1054,7 @@ export async function getUsersAppointments(
       };
       return data;
     });
-    return appointments.filter(
-      (appointment: IAppointment) =>
-        appointment.date >= new Date().toLocaleDateString()
-    );
+    return appointments;
   } catch (error) {
     console.error("Error fetching user URI", error);
     throw error;
@@ -1311,5 +1316,110 @@ async function getCalendlyInvitation(
   } catch (error) {
     console.error("Error fetching Calendly invitations:", error);
     throw new Error("Error fetching Calendly invitations");
+  }
+}
+
+export async function fetchMembershipUuid(email: string) {
+  try {
+    console.log("email while deleting", email);
+    const orgUri = await getOrganizationUri();
+    const response = await fetch(
+      `https://api.calendly.com/organization_memberships?organization=${encodeURIComponent(
+        orgUri
+      )}&email=${encodeURIComponent(email)}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${CALENDLY_API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`Error fetching membership UUID: ${response.statusText}`);
+    }
+    const data = await response.json();
+    const membership = data.collection[0]; // Assuming the first entry is the required one
+    return membership.uri.split("/").pop();
+  } catch (error) {
+    console.error("Error fetching membership UUID", error);
+    throw error;
+  }
+}
+export async function removeProfessorFromOrganization(professorId: number) {
+  try {
+    // Step 1: Fetch the professor from the database to get their email or UUID
+    const professor = await professorRepo.getById(professorId);
+    if (!professor) throw new Error("Professor not found");
+    // Step 2: Fetch the organization membership UUID from Calendly
+    const membershipUuid = await fetchMembershipUuid(professor.email);
+    // Step 3: Call the Calendly API to remove the professor from the organization
+    const response = await fetch(
+      `https://api.calendly.com/organization_memberships/${membershipUuid}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_CALENDLY_ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to remove professor from organization:`);
+    }
+    // Step 4: After successful deletion, remove the professor from the database
+    const deletedProfessor = await professorRepo.delete(professorId);
+    return {
+      success: true,
+      message: "Professor successfully removed from organization and database",
+      deletedProfessor,
+    };
+  } catch (error: any) {
+    console.error("Error removing professor:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to remove professor",
+    };
+  } finally {
+    revalidatePath("/admin/professors");
+  }
+}
+
+export async function createPayment(data: IPaymentBase) {
+  try {
+    const payment = await paymentRepo.create(data);
+    return { success: true, payment };
+  } catch (error) {
+    console.error("Error creating payment:", error);
+    return { success: false, error: "Error creating payment" };
+  }
+}
+
+export async function checkPaymentStatus(
+  professorId: number,
+  memberId: number
+) {
+  try {
+    const paymentId = await paymentRepo.getByProfessorIdAndMemberId(
+      professorId,
+      memberId
+    );
+    if (paymentId) return { success: true, paymentId };
+    else return { success: false };
+  } catch (error) {
+    console.error("Error checking payment status:", error);
+    return { success: false, error: "Error checking payment status" };
+  }
+}
+
+export async function updatePaymentWithAppointment(
+  paymentId: number,
+  appointmentUuid: string
+) {
+  try {
+    await paymentRepo.update(paymentId, { appointmentId: appointmentUuid });
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating payment with appointment:", error);
   }
 }

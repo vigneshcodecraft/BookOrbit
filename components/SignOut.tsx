@@ -1,4 +1,5 @@
 import { signOut } from "@/auth";
+import { LogOut } from "lucide-react";
 
 export default function SignOut() {
   return (
@@ -8,7 +9,12 @@ export default function SignOut() {
         await signOut({ redirectTo: "/login" });
       }}
     >
-      <button type="submit">Logout</button>
+      <button type="submit">
+        <div className="flex ">
+          <LogOut className="mr-2 h-4 w-4" />
+          Logout
+        </div>
+      </button>
     </form>
   );
 }

@@ -2,23 +2,28 @@
 
 import { useState } from "react";
 import Script from "next/script";
-import { createOrder } from "@/lib/actions";
+import { createOrder, createPayment } from "@/lib/actions";
 import { useRouter } from "next/navigation";
+import { IProfessor } from "@/lib/professors/professor.model";
+import { IPaymentBase } from "@/lib/payments/payment.model";
 
 export interface ICustomer {
   name: string;
   email: string;
   phone: string;
+  id?: number;
 }
 
-export default function AppointmentBooking({
+export default function RazorPay({
   customer,
   redirectUrl,
   amount,
+  professor,
 }: {
   amount: number;
   customer: ICustomer;
   redirectUrl: string;
+  professor: IProfessor;
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -53,20 +58,35 @@ export default function AppointmentBooking({
         customerEmail: customer.email,
         customerPhone: customer.phone,
       });
-
       if (result.success && result.order) {
         const options = {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: result.order.amount,
           currency: result.order.currency,
           name: "Library Management System",
-          description: "Appointment Booking",
+          description: `Appointment with ${professor.name}`,
           order_id: result.order.id,
-          handler: function (response: any) {
-            // Handle successful payment
-            console.log(response);
-            router.push(redirectUrl);
-            // Redirect to Calendly
+          handler: async function (response: any) {
+            try {
+              const paymentData = await createPayment({
+                paymentId: response.razorpay_payment_id,
+                orderId: response.razorpay_order_id,
+                amount: (Number(result.order.amount) / 100).toString(),
+                currency: result.order.currency,
+                status: "paid",
+                memberId: customer.id!,
+                professorId: professor.id,
+                appointmentId: null,
+              });
+              if (paymentData.success) {
+                console.log("Payment saved:", paymentData.payment);
+                router.push(redirectUrl);
+              } else {
+                throw new Error("Payment not saved");
+              }
+            } catch (error) {
+              console.error("Error creating payment:", error);
+            }
           },
           prefill: {
             name: customer.name,
@@ -74,10 +94,9 @@ export default function AppointmentBooking({
             contact: customer.phone,
           },
           theme: {
-            color: "#3399cc",
+            color: "#3b82f6",
           },
         };
-
         const paymentObject = new (window as any).Razorpay(options);
         paymentObject.open();
       } else {
